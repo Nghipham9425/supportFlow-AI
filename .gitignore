@@ -1,0 +1,65 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+.vercel/
+.turbo/
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# .NET
+bin/
+obj/
+TestResults/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+
+# EF Core temporary files
+efbundle
+
+# Docker / local database
+*.pid
+*.seed
+
+# Local secrets
+secrets.json
+appsettings.Local.json
+appsettings.*.local.json
+

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SupportFlow.Api/SupportFlow.Api.csproj" />
+  <Project Path="SupportFlow.Application/SupportFlow.Application.csproj" />
+  <Project Path="SupportFlow.Domain/SupportFlow.Domain.csproj" />
+  <Project Path="SupportFlow.Infrastructure/SupportFlow.Infrastructure.csproj" />
+</Solution>
