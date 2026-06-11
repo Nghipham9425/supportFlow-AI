@@ -1,4 +1,8 @@
 import { CreateTicketInput, Ticket } from "@/types/ticket";
+import {
+  CreateKnowledgeArticleInput,
+  KnowledgeArticle,
+} from "@/types/knowledge";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5059/api";
@@ -33,6 +37,19 @@ export const ticketsApi = {
     }),
   remove: (id: string) =>
     request<void>(`/tickets/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+export const knowledgeApi = {
+  list: () => request<KnowledgeArticle[]>("/knowledge-articles"),
+  create: (input: CreateKnowledgeArticleInput) =>
+    request<KnowledgeArticle>("/knowledge-articles", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) =>
+    request<void>(`/knowledge-articles/${id}`, {
       method: "DELETE",
     }),
 };

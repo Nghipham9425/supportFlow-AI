@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using SupportFlow.Application.Tickets.Interfaces;
 using SupportFlow.Infrastructure.Persistence;
 using SupportFlow.Infrastructure.Tickets;
+using SupportFlow.Infrastructure.Knowledge;
+using SupportFlow.Application.Knowledge.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IKnowledgeArticleService, KnowledgeArticleService>();
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {

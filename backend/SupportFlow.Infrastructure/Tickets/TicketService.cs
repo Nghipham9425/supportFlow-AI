@@ -112,8 +112,12 @@ namespace SupportFlow.Infrastructure.Tickets
         {
             ticket.Status = request.Status.Value;
         }
+        ticket.UpdatedAt = DateTime.UtcNow;
 
-            return ToDto(ticket);
+        await _dbContext.SaveChangesAsync();
+
+        return ToDto(ticket);
+            
         }
 
         private static TicketDto ToDto(Ticket ticket)

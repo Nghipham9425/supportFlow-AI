@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Ticket> Tickets => Set<Ticket>();
+    public DbSet<KnowledgeArticle> KnowledgeArticles => Set<KnowledgeArticle>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,6 +60,22 @@ public class AppDbContext : DbContext
                 .IsRequired();
 
             entity.Property(ticket => ticket.Sentiment)
+                .HasConversion<string>()
+                .HasMaxLength(50)
+                .IsRequired();
+        });
+        modelBuilder.Entity<KnowledgeArticle>(entity =>
+        {
+            entity.HasKey(article => article.Id);
+
+            entity.Property(article => article.Title)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(article => article.Content)
+                .IsRequired();
+
+            entity.Property(article => article.Category)
                 .HasConversion<string>()
                 .HasMaxLength(50)
                 .IsRequired();
