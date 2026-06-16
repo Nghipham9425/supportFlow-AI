@@ -1,11 +1,12 @@
-import { CreateTicketInput, Ticket } from "@/types/ticket";
+import { CreateTicketInput, Ticket } from "@/types/ticket"
 import {
   CreateKnowledgeArticleInput,
   KnowledgeArticle,
-} from "@/types/knowledge";
+  UpdateKnowledgeArticleInput,
+} from "@/types/knowledge"
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5059/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5059/api"
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -14,17 +15,17 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       ...options?.headers,
     },
     ...options,
-  });
+  })
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    throw new Error(`API request failed: ${response.status}`)
   }
 
   if (response.status === 204) {
-    return undefined as T;
+    return undefined as T
   }
 
-  return response.json() as Promise<T>;
+  return response.json() as Promise<T>
 }
 
 export const ticketsApi = {
@@ -39,7 +40,7 @@ export const ticketsApi = {
     request<void>(`/tickets/${id}`, {
       method: "DELETE",
     }),
-};
+}
 
 export const knowledgeApi = {
   list: () => request<KnowledgeArticle[]>("/knowledge-articles"),
@@ -52,4 +53,9 @@ export const knowledgeApi = {
     request<void>(`/knowledge-articles/${id}`, {
       method: "DELETE",
     }),
-};
+  update: (id: string, input: UpdateKnowledgeArticleInput) =>
+    request<KnowledgeArticle>(`/knowledge-articles/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+}

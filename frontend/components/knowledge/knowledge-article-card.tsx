@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   AlertDialog,
@@ -11,26 +11,31 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { knowledgeApi } from "@/lib/api";
-import { KnowledgeArticle } from "@/types/knowledge";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, BookOpen, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { KnowledgeCategoryBadge } from "./knowledge-category-badge";
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { knowledgeApi } from "@/lib/api"
+import { KnowledgeArticle } from "@/types/knowledge"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { AlertTriangle, BookOpen, Trash2 } from "lucide-react"
+import { toast } from "sonner"
+import { KnowledgeCategoryBadge } from "./knowledge-category-badge"
+import { EditKnowledgeDialog } from "./edit-knowledge-dialog"
 
-export function KnowledgeArticleCard({ article }: { article: KnowledgeArticle }) {
-  const queryClient = useQueryClient();
+export function KnowledgeArticleCard({
+  article,
+}: {
+  article: KnowledgeArticle
+}) {
+  const queryClient = useQueryClient()
   const deleteArticle = useMutation({
     mutationFn: knowledgeApi.remove,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["knowledge-articles"] });
-      toast.success("Knowledge article deleted");
+      queryClient.invalidateQueries({ queryKey: ["knowledge-articles"] })
+      toast.success("Knowledge article deleted")
     },
     onError: () => toast.error("Could not delete article"),
-  });
+  })
 
   return (
     <Card className="border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
@@ -47,42 +52,45 @@ export function KnowledgeArticleCard({ article }: { article: KnowledgeArticle })
               {article.title}
             </CardTitle>
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                disabled={deleteArticle.isPending}
-              >
-                <Trash2 className="size-4" />
-                <span className="sr-only">Delete article</span>
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogMedia className="bg-rose-50 text-rose-700">
-                  <AlertTriangle className="size-5" />
-                </AlertDialogMedia>
-                <AlertDialogTitle>Delete article?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete{" "}
-                  <span className="font-medium text-foreground">
-                    {article.title}
-                  </span>
-                  . Future retrieval will not be able to use this content.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  variant="destructive"
-                  onClick={() => deleteArticle.mutate(article.id)}
+          <div className="flex shrink-0 items-center gap-1">
+            <EditKnowledgeDialog article={article} />
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  disabled={deleteArticle.isPending}
                 >
-                  Delete article
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  <Trash2 className="size-4" />
+                  <span className="sr-only">Delete article</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogMedia className="bg-rose-50 text-rose-700">
+                    <AlertTriangle className="size-5" />
+                  </AlertDialogMedia>
+                  <AlertDialogTitle>Delete article?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete{" "}
+                    <span className="font-medium text-foreground">
+                      {article.title}
+                    </span>
+                    . Future retrieval will not be able to use this content.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    onClick={() => deleteArticle.mutate(article.id)}
+                  >
+                    Delete article
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -100,5 +108,5 @@ export function KnowledgeArticleCard({ article }: { article: KnowledgeArticle })
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
