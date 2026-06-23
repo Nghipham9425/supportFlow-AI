@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<KnowledgeArticle> KnowledgeArticles => Set<KnowledgeArticle>();
+    public DbSet<KnowledgeChunk> KnowledgeChunks => Set<KnowledgeChunk>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -80,5 +81,16 @@ public class AppDbContext : DbContext
                 .HasMaxLength(50)
                 .IsRequired();
         });
+        modelBuilder.Entity<KnowledgeChunk>(entity =>
+        {
+            entity.HasKey(chunk => chunk.Id);
+            entity.Property(chunk => chunk.Content).IsRequired();
+            entity.Property(chunk => chunk.ChunkIndex).IsRequired();
+
+            entity.HasOne(chunk => chunk.KnowledgeArticle)
+                .WithMany()
+                .HasForeignKey(chunk => chunk.KnowledgeArticleId)
+                .OnDelete(DeleteBehavior.Cascade);
+                });
     }
 }

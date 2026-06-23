@@ -17,6 +17,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IKnowledgeArticleService, KnowledgeArticleService>();
+builder.Services.AddScoped<IKnowledgeChunkService, KnowledgeChunkService>();
+
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {

@@ -12,10 +12,14 @@ namespace SupportFlow.Api.Controllers;
 public class KnowledgeArticlesController : ControllerBase
 {
     private readonly IKnowledgeArticleService _knowledgeArticleService;
+    private readonly IKnowledgeChunkService _knowledgeChunkService;
 
-    public KnowledgeArticlesController(IKnowledgeArticleService knowledgeArticleService)
+    public KnowledgeArticlesController(
+    IKnowledgeArticleService knowledgeArticleService,
+    IKnowledgeChunkService knowledgeChunkService)
     {
-        this._knowledgeArticleService = knowledgeArticleService;
+        _knowledgeArticleService = knowledgeArticleService;
+        _knowledgeChunkService = knowledgeChunkService;
     }
     [HttpGet]
     public async Task<ActionResult<List<KnowledgeArticleDto>>> GetArticles()
@@ -64,5 +68,27 @@ public class KnowledgeArticlesController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("{id:guid}/chunks")]
+    public async Task<ActionResult<List<KnowledgeChunkDto>>> GetChunks(Guid id)
+    {
+        var chunks = await _knowledgeChunkService.GetChunksByArticleIdAsync(id);
+
+        return Ok(chunks);
+    }
+
+
+[HttpPost("{id:guid}/chunks/regenerate")]
+public async Task<ActionResult<List<KnowledgeChunkDto>>> RegenerateChunks(Guid id)
+{
+    var chunks = await _knowledgeChunkService.RegenerateChunksAsync(id);
+
+    if (chunks is null)
+    {
+        return NotFound();
+    }
+
+    return Ok(chunks);
+}
 
 }

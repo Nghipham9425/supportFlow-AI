@@ -2,6 +2,7 @@ import { CreateTicketInput, Ticket } from "@/types/ticket"
 import {
   CreateKnowledgeArticleInput,
   KnowledgeArticle,
+  KnowledgeChunk,
   UpdateKnowledgeArticleInput,
 } from "@/types/knowledge"
 
@@ -57,5 +58,11 @@ export const knowledgeApi = {
     request<KnowledgeArticle>(`/knowledge-articles/${id}`, {
       method: "PATCH",
       body: JSON.stringify(input),
+    }),
+  getChunks: (id: string) =>
+    request<KnowledgeChunk[]>(`/knowledge-articles/${id}/chunks`),
+  regenerateChunks: (id: string) =>
+    request<KnowledgeChunk[]>(`/knowledge-articles/${id}/chunks/regenerate`, {
+      method: "POST",
     }),
 }

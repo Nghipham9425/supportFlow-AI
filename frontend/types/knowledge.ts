@@ -7,6 +7,18 @@ export type KnowledgeArticle = {
   category: KnowledgeArticleCategory
   createdAt: string
   updatedAt: string
+  chunkCount: number
+  isAiReady: boolean
+}
+
+export type KnowledgeChunk = {
+  id: string
+  knowledgeArticleId: string
+  content: string
+  chunkIndex: number
+  isEmbedded: boolean
+  embeddedAt: string | null
+  createdAt: string
 }
 
 export type CreateKnowledgeArticleInput = {
