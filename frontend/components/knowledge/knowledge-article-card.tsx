@@ -23,6 +23,7 @@ import { EditKnowledgeDialog } from "./edit-knowledge-dialog"
 import { KnowledgeCategoryBadge } from "./knowledge-category-badge"
 import { RegenerateChunksButton } from "./regenerate-chunks-button"
 import { ViewChunksDialog } from "./view-chunks-dialog"
+import { GenerateEmbeddingsButton } from "./generate-embeddings-button"
 
 export function KnowledgeArticleCard({
   article,
@@ -79,6 +80,7 @@ export function KnowledgeArticleCard({
         </div>
         <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
           <RegenerateChunksButton articleId={article.id} />
+          <GenerateEmbeddingsButton />
           <ViewChunksDialog articleId={article.id} />
           <EditKnowledgeDialog article={article} />
           <AlertDialog>
