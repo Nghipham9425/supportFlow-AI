@@ -2,10 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SupportFlow.Application.Knowledge.DTOs;
 using SupportFlow.Application.Knowledge.Interfaces;
 
-
 namespace SupportFlow.Api.Controllers;
-
-
 
 [ApiController]
 [Route("api/knowledge-articles")]
@@ -13,20 +10,25 @@ public class KnowledgeArticlesController : ControllerBase
 {
     private readonly IKnowledgeArticleService _knowledgeArticleService;
     private readonly IKnowledgeChunkService _knowledgeChunkService;
+    private readonly IKnowledgeEmbeddingService _knowledgeEmbeddingService;
 
     public KnowledgeArticlesController(
-    IKnowledgeArticleService knowledgeArticleService,
-    IKnowledgeChunkService knowledgeChunkService)
+        IKnowledgeArticleService knowledgeArticleService,
+        IKnowledgeChunkService knowledgeChunkService,
+        IKnowledgeEmbeddingService knowledgeEmbeddingService)
     {
         _knowledgeArticleService = knowledgeArticleService;
         _knowledgeChunkService = knowledgeChunkService;
+        _knowledgeEmbeddingService = knowledgeEmbeddingService;
     }
+
     [HttpGet]
     public async Task<ActionResult<List<KnowledgeArticleDto>>> GetArticles()
     {
         var articles = await _knowledgeArticleService.GetArticlesAsync();
         return Ok(articles);
     }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<KnowledgeArticleDto>> GetArticle(Guid id)
     {
@@ -53,7 +55,6 @@ public class KnowledgeArticlesController : ControllerBase
 
         if (article is null) return NotFound();
         return Ok(article);
-
     }
 
     [HttpDelete("{id:guid}")]
@@ -77,18 +78,29 @@ public class KnowledgeArticlesController : ControllerBase
         return Ok(chunks);
     }
 
-
-[HttpPost("{id:guid}/chunks/regenerate")]
-public async Task<ActionResult<List<KnowledgeChunkDto>>> RegenerateChunks(Guid id)
-{
-    var chunks = await _knowledgeChunkService.RegenerateChunksAsync(id);
-
-    if (chunks is null)
+    [HttpPost("{id:guid}/chunks/regenerate")]
+    public async Task<ActionResult<List<KnowledgeChunkDto>>> RegenerateChunks(Guid id)
     {
-        return NotFound();
+        var chunks = await _knowledgeChunkService.RegenerateChunksAsync(id);
+
+        if (chunks is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(chunks);
     }
 
-    return Ok(chunks);
-}
+    [HttpPost("{id:guid}/chunks/embed")]
+    public async Task<ActionResult<List<KnowledgeChunkDto>>> GenerateEmbeddings(Guid id)
+    {
+        var chunks = await _knowledgeEmbeddingService.GenerateEmbeddingsAsync(id);
 
+        if (chunks is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(chunks);
+    }
 }

@@ -80,7 +80,7 @@ export function KnowledgeArticleCard({
         </div>
         <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
           <RegenerateChunksButton articleId={article.id} />
-          <GenerateEmbeddingsButton />
+          <GenerateEmbeddingsButton articleId={article.id} />
           <ViewChunksDialog articleId={article.id} />
           <EditKnowledgeDialog article={article} />
           <AlertDialog>

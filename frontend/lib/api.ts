@@ -65,4 +65,9 @@ export const knowledgeApi = {
     request<KnowledgeChunk[]>(`/knowledge-articles/${id}/chunks/regenerate`, {
       method: "POST",
     }),
+
+  generateEmbeddings: (id: string) =>
+    request<KnowledgeChunk[]>(`/knowledge-articles/${id}/chunks/embed`, {
+      method: "POST",
+    }),
 }
