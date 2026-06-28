@@ -8,7 +8,7 @@ export function GenerateEmbeddingsButton() {
   return (
     <Button
       variant="outline"
-      size={"sm"}
+      size="sm"
       onClick={() => {
         toast.info("Embedding generation will be added next.")
       }}

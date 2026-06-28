@@ -65,40 +65,38 @@ export function ViewChunksDialog({ articleId }: { articleId: string }) {
               </p>
             </div>
           ) : (
-            chunks.map((chunk) =>
-              chunks.map((chunk) => (
-                <div
-                  key={chunk.id}
-                  className="rounded-lg border border-slate-200 bg-white p-4"
-                >
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                      Chunk {chunk.chunkIndex + 1}
-                    </div>
-
-                    {chunk.isEmbedded ? (
-                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                        Embedded
-                      </span>
-                    ) : (
-                      <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-                        Pending embedding
-                      </span>
-                    )}
+            chunks.map((chunk) => (
+              <div
+                key={chunk.id}
+                className="rounded-lg border border-slate-200 bg-white p-4"
+              >
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Chunk {chunk.chunkIndex + 1}
                   </div>
 
-                  {chunk.embeddedAt && (
-                    <p className="mb-2 text-xs text-slate-500">
-                      Embedded {new Date(chunk.embeddedAt).toLocaleString()}
-                    </p>
+                  {chunk.isEmbedded ? (
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                      Embedded
+                    </span>
+                  ) : (
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+                      Pending embedding
+                    </span>
                   )}
-
-                  <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
-                    {chunk.content}
-                  </p>
                 </div>
-              )),
-            )
+
+                {chunk.embeddedAt && (
+                  <p className="mb-2 text-xs text-slate-500">
+                    Embedded {new Date(chunk.embeddedAt).toLocaleString()}
+                  </p>
+                )}
+
+                <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                  {chunk.content}
+                </p>
+              </div>
+            ))
           )}
         </div>
       </DialogContent>
