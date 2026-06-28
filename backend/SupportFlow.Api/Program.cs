@@ -4,6 +4,8 @@ using SupportFlow.Infrastructure.Persistence;
 using SupportFlow.Infrastructure.Tickets;
 using SupportFlow.Infrastructure.Knowledge;
 using SupportFlow.Application.Knowledge.Interfaces;
+using SupportFlow.Application.AI.Interfaces;
+using SupportFlow.Infrastructure.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IKnowledgeArticleService, KnowledgeArticleService>();
 builder.Services.AddScoped<IKnowledgeChunkService, KnowledgeChunkService>();
+builder.Services.AddScoped<IEmbeddingProvider, FakeEmbeddingProvider>();
+builder.Services.AddScoped<IKnowledgeEmbeddingService, KnowledgeEmbeddingService>();
 
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
