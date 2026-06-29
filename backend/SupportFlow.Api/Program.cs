@@ -20,8 +20,24 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IKnowledgeArticleService, KnowledgeArticleService>();
 builder.Services.AddScoped<IKnowledgeChunkService, KnowledgeChunkService>();
-builder.Services.AddScoped<IEmbeddingProvider, FakeEmbeddingProvider>();
 builder.Services.AddScoped<IKnowledgeEmbeddingService, KnowledgeEmbeddingService>();
+
+var embeddingProvider = builder.Configuration["AI:EmbeddingProvider"] ?? "Fake";
+
+if (embeddingProvider.Equals("Fake", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddScoped<IEmbeddingProvider, FakeEmbeddingProvider>();
+}
+else if (embeddingProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
+{
+    throw new InvalidOperationException(
+        "OpenAI embedding provider is not implemented yet. Set AI:EmbeddingProvider to Fake.");
+}
+else
+{
+    throw new InvalidOperationException(
+        $"Unsupported embedding provider '{embeddingProvider}'. Supported values: Fake, OpenAI.");
+}
 
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
