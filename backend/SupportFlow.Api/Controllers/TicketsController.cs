@@ -10,10 +10,14 @@ namespace SupportFlow.Api.Controllers;
 public class TicketsController : ControllerBase
 {
     private readonly ITicketService _ticketService;
+    private readonly ITicketAnalysisService _ticketAnalysisService;
 
-    public TicketsController(ITicketService ticketService)
+    public TicketsController(
+        ITicketService ticketService,
+        ITicketAnalysisService ticketAnalysisService)
     {
         _ticketService = ticketService;
+        _ticketAnalysisService = ticketAnalysisService;
     }
     [HttpGet]
     public async Task<ActionResult<List<TicketDto>>> GetTickets()
@@ -72,4 +76,16 @@ public class TicketsController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:guid}/analyze")]
+    public async Task<ActionResult<TicketDto>> AnalyzeTicket(Guid id)
+    {
+        var ticket = await _ticketAnalysisService.AnalyzeTicketAsync(id);
+
+        if (ticket is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(ticket);
+    }
 }

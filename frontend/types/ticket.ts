@@ -61,3 +61,11 @@ export const ticketCategoryLabels: Record<TicketCategory, string> = {
   5: "Product question",
   6: "Bug report",
 };
+
+export const ticketSentimentLabels: Record<TicketSentiment, string> = {
+  1: "Unknown",
+  2: "Neutral",
+  3: "Confused",
+  4: "Frustrated",
+  5: "Angry",
+};

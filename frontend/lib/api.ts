@@ -37,6 +37,10 @@ export const ticketsApi = {
       method: "POST",
       body: JSON.stringify(input),
     }),
+  analyze: (id: string) =>
+    request<Ticket>(`/tickets/${id}/analyze`, {
+      method: "POST",
+    }),
   remove: (id: string) =>
     request<void>(`/tickets/${id}`, {
       method: "DELETE",

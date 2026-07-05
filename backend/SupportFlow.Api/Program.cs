@@ -18,6 +18,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<ITicketAnalysisService, TicketAnalysisService>();
+builder.Services.AddScoped<ITicketAnalyzer, FakeTicketAnalyzer>();
 builder.Services.AddScoped<IKnowledgeArticleService, KnowledgeArticleService>();
 builder.Services.AddScoped<IKnowledgeChunkService, KnowledgeChunkService>();
 builder.Services.AddScoped<IKnowledgeEmbeddingService, KnowledgeEmbeddingService>();

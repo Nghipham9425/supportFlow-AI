@@ -10,9 +10,10 @@ import {
   ticketCategoryLabels,
   ticketChannelLabels,
   ticketPriorityLabels,
+  ticketSentimentLabels,
   ticketStatusLabels,
 } from "@/types/ticket";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Bot,
@@ -24,8 +25,11 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export function TicketDetail({ ticketId }: { ticketId: string }) {
+  const queryClient = useQueryClient();
+
   const {
     data: ticket,
     isLoading,
@@ -33,6 +37,18 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
   } = useQuery({
     queryKey: ["tickets", ticketId],
     queryFn: () => ticketsApi.getById(ticketId),
+  });
+
+  const analyzeTicket = useMutation({
+    mutationFn: () => ticketsApi.analyze(ticketId),
+    onSuccess: (updatedTicket) => {
+      queryClient.setQueryData(["tickets", ticketId], updatedTicket);
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      toast.success("Ticket analyzed with mock AI");
+    },
+    onError: () => {
+      toast.error("Could not analyze ticket");
+    },
   });
 
   if (isLoading) {
@@ -85,9 +101,13 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
             </p>
           </div>
         </div>
-        <Button className="bg-emerald-600 text-white hover:bg-emerald-700" disabled>
+        <Button
+          className="bg-emerald-600 text-white hover:bg-emerald-700"
+          disabled={analyzeTicket.isPending}
+          onClick={() => analyzeTicket.mutate()}
+        >
           <Sparkles className="size-4" />
-          Analyze with AI
+          {analyzeTicket.isPending ? "Analyzing..." : "Analyze with AI"}
         </Button>
       </div>
 
@@ -121,10 +141,16 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                     <Sparkles className="size-4 text-emerald-600" />
                     AI summary
                   </div>
-                  <p className="text-sm text-slate-500">
-                    Run analysis to classify the ticket and generate a concise
-                    support summary.
-                  </p>
+                  {ticket.aiSummary ? (
+                    <p className="text-sm leading-6 text-slate-700">
+                      {ticket.aiSummary}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-slate-500">
+                      Run analysis to classify the ticket and generate a concise
+                      support summary.
+                    </p>
+                  )}
                 </div>
                 <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
                   <div className="mb-2 flex items-center gap-2 text-sm font-medium">
@@ -161,6 +187,10 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                 label="Category"
                 value={ticketCategoryLabels[ticket.category]}
               />
+              <Property
+                label="Sentiment"
+                value={ticketSentimentLabels[ticket.sentiment]}
+              />
               <Property label="Channel" value={ticketChannelLabels[ticket.channel]} />
             </CardContent>
           </Card>
@@ -196,8 +226,12 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                 description="Initial customer issue was captured."
               />
               <TimelineItem
-                title="Waiting for AI analysis"
-                description="Triage and draft generation are not connected yet."
+                title={ticket.aiSummary ? "AI analysis completed" : "Waiting for AI analysis"}
+                description={
+                  ticket.aiSummary
+                    ? "Mock AI triage updated summary, sentiment, priority, and category."
+                    : "Run AI analysis to triage this ticket."
+                }
               />
             </CardContent>
           </Card>
