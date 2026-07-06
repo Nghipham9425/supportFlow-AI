@@ -46,6 +46,7 @@ Database:
 AI:
 
 - Current implementation uses `FakeEmbeddingProvider`.
+- Ticket analysis and draft reply are implemented with fake AI providers.
 - OpenAI config exists but `OpenAIEmbeddingProvider` is not implemented yet.
 - Default planned embedding model: `text-embedding-3-small`.
 - Do not require an OpenAI API key for normal local development yet.
@@ -92,6 +93,8 @@ Tickets:
 - Ticket search/filter UI.
 - Delete confirmation.
 - Manual ticket creation.
+- Mock `Analyze with AI` flow updates summary, sentiment, priority, category, and status.
+- Mock `Generate draft reply` flow creates and stores an AI draft reply.
 
 Knowledge:
 
@@ -113,6 +116,20 @@ Embedding workflow:
 - It does not store vector values yet.
 - Frontend `Generate embeddings` button calls:
   - `POST /api/knowledge-articles/{id}/chunks/embed`
+
+Ticket AI workflow:
+
+- `ITicketAnalyzer` exists.
+- `FakeTicketAnalyzer` implements mock ticket triage.
+- `ITicketAnalysisService` updates ticket AI fields.
+- `ITicketDraftReplyGenerator` exists.
+- `FakeTicketDraftReplyGenerator` creates a mock customer-facing reply.
+- `ITicketDraftReplyService` stores `AiDraftReply` and sets status to `Drafted`.
+- Frontend ticket detail page has:
+  - `Analyze with AI`
+  - `Generate draft reply`
+  - AI summary display
+  - draft reply textarea
 
 Config:
 
@@ -136,6 +153,11 @@ Knowledge chunks:
 - `POST /api/knowledge-articles/{id}/chunks/regenerate`
 - `POST /api/knowledge-articles/{id}/chunks/embed`
 
+Tickets:
+
+- `POST /api/tickets/{id}/analyze`
+- `POST /api/tickets/{id}/draft-reply`
+
 Expected chunk flow:
 
 ```text
@@ -146,6 +168,17 @@ Create knowledge article
 -> fake provider runs
 -> chunks become embedded
 -> UI shows Embedded
+```
+
+Expected mock ticket AI flow:
+
+```text
+Open ticket detail
+-> click Analyze with AI
+-> fake analyzer updates AiSummary, Sentiment, Priority, Category, Status = Analyzed
+-> click Generate draft reply
+-> fake draft generator stores AiDraftReply, Status = Drafted
+-> UI shows the generated draft in a textarea
 ```
 
 ## Local Development
@@ -238,30 +271,34 @@ Implemented:
 - Fake embedding workflow.
 - Embedding status in backend and frontend.
 - Provider selection config.
+- Mock ticket AI analysis.
+- Mock ticket draft reply generation.
 
 Not implemented yet:
 
 - `OpenAIEmbeddingProvider`.
 - Storing actual vector embeddings in PostgreSQL/pgvector.
 - Vector similarity search.
-- Ticket AI analysis.
-- AI draft reply generation.
+- Real OpenAI-backed ticket analysis.
+- Real OpenAI-backed draft reply generation.
 
 ## Suggested Next Steps
 
 Best next task:
 
-1. Create `OpenAIEmbeddingProvider` skeleton in `SupportFlow.Infrastructure/AI/OpenAI`.
-2. Register `OpenAIOptions` with Options pattern.
-3. Keep `AI:EmbeddingProvider` set to `Fake` by default.
-4. Do not call OpenAI until the user is ready with API key/billing.
+1. Polish the ticket detail AI workspace UI.
+2. Add explicit "mock AI" copy only where helpful for development, but avoid making the production UI feel fake.
+3. Create `OpenAIEmbeddingProvider` skeleton in `SupportFlow.Infrastructure/AI/OpenAI`.
+4. Register `OpenAIOptions` with Options pattern.
+5. Keep `AI:EmbeddingProvider` set to `Fake` by default.
+6. Do not call OpenAI until the user is ready with API key/billing.
 
 After that:
 
 1. Add real OpenAI embedding calls.
 2. Add vector storage with pgvector.
 3. Implement similarity search.
-4. Build AI ticket analysis and AI draft reply.
+4. Replace fake ticket analysis/draft providers with real OpenAI-backed providers.
 5. Improve README and deployment docs.
 6. Dockerize frontend/backend for VPS deployment.
 
@@ -276,4 +313,3 @@ Default behavior:
 - Do not dump a large full implementation unless the user explicitly asks "lam giup toi" or similar.
 - When the user asks to implement, make the change and verify it.
 - Use Vietnamese in conversation, casual but technically clear.
-
