@@ -11,13 +11,16 @@ public class TicketsController : ControllerBase
 {
     private readonly ITicketService _ticketService;
     private readonly ITicketAnalysisService _ticketAnalysisService;
+    private readonly ITicketDraftReplyService _ticketDraftReplyService;
 
     public TicketsController(
         ITicketService ticketService,
-        ITicketAnalysisService ticketAnalysisService)
+        ITicketAnalysisService ticketAnalysisService,
+        ITicketDraftReplyService ticketDraftReplyService)
     {
         _ticketService = ticketService;
         _ticketAnalysisService = ticketAnalysisService;
+        _ticketDraftReplyService = ticketDraftReplyService;
     }
     [HttpGet]
     public async Task<ActionResult<List<TicketDto>>> GetTickets()
@@ -86,6 +89,13 @@ public class TicketsController : ControllerBase
             return NotFound();
         }
 
+        return Ok(ticket);
+    }
+    [HttpPost("{id:guid}/draft-reply")]
+    public async Task<ActionResult<TicketDto>> GenerateDraftReply(Guid id)
+    {
+        var ticket = await _ticketDraftReplyService.GenerateDraftReplyAsync(id);
+        if (ticket is null) return NotFound();
         return Ok(ticket);
     }
 }

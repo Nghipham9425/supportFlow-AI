@@ -24,6 +24,8 @@ public class Ticket
 
     public string? AiSummary { get; set; }
 
+    public string? AiDraftReply { get; set; }
+
     public TicketSentiment Sentiment { get; set; } = TicketSentiment.Unknown;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

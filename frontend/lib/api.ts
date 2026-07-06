@@ -41,6 +41,10 @@ export const ticketsApi = {
     request<Ticket>(`/tickets/${id}/analyze`, {
       method: "POST",
     }),
+  generateDraftReply: (id: string) =>
+    request<Ticket>(`/tickets/${id}/draft-reply`, {
+      method: "POST",
+    }),
   remove: (id: string) =>
     request<void>(`/tickets/${id}`, {
       method: "DELETE",

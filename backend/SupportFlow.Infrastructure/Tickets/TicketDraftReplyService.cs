@@ -8,37 +8,29 @@ using SupportFlow.Infrastructure.Persistence;
 
 namespace SupportFlow.Infrastructure.Tickets;
 
-public class TicketAnalysisService : ITicketAnalysisService
+public class TicketDraftReplyService : ITicketDraftReplyService
 {
-    private readonly AppDbContext _dbContext;
-    private readonly ITicketAnalyzer _ticketAnalyzer;
+    private readonly AppDbContext _db;
+    private readonly ITicketDraftReplyGenerator _draftReplyGenerator;
 
-    public TicketAnalysisService(AppDbContext dbContext, ITicketAnalyzer ticketAnalyzer)
+    public TicketDraftReplyService(
+        AppDbContext db,
+        ITicketDraftReplyGenerator draftReplyGenerator)
     {
-        _dbContext = dbContext;
-        _ticketAnalyzer = ticketAnalyzer;
+        _db = db;
+        _draftReplyGenerator = draftReplyGenerator;
     }
-
-    public async Task<TicketDto?> AnalyzeTicketAsync(Guid ticketId)
+    public async Task<TicketDto?> GenerateDraftReplyAsync(Guid ticketId)
     {
-        var ticket = await _dbContext.Tickets
-            .FirstOrDefaultAsync(ticket => ticket.Id == ticketId);
+        var ticket = await _db.Tickets.FirstOrDefaultAsync(ticket => ticket.Id == ticketId);
+        if (ticket is null) return null;
+        var draftReply = await _draftReplyGenerator.GenerateDraftReplyAsync(ToDto(ticket));
 
-        if (ticket is null)
-        {
-            return null;
-        }
-
-        var analysis = await _ticketAnalyzer.AnalyzeAsync(ToDto(ticket));
-
-        ticket.AiSummary = analysis.Summary;
-        ticket.Sentiment = analysis.Sentiment;
-        ticket.Priority = analysis.SuggestedPriority;
-        ticket.Category = analysis.SuggestedCategory;
-        ticket.Status = TicketStatus.Analyzed;
+        ticket.AiDraftReply = draftReply;
+        ticket.Status = TicketStatus.Drafted;
         ticket.UpdatedAt = DateTime.UtcNow;
 
-        await _dbContext.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         return ToDto(ticket);
     }

@@ -134,6 +134,7 @@ namespace SupportFlow.Infrastructure.Tickets
                 Priority = ticket.Priority,
                 Status = ticket.Status,
                 AiSummary = ticket.AiSummary,
+                AiDraftReply = ticket.AiDraftReply,
                 Sentiment = ticket.Sentiment,
                 CreatedAt = ticket.CreatedAt,
                 UpdatedAt = ticket.UpdatedAt

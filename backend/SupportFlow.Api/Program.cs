@@ -23,6 +23,8 @@ builder.Services.AddScoped<ITicketAnalyzer, FakeTicketAnalyzer>();
 builder.Services.AddScoped<IKnowledgeArticleService, KnowledgeArticleService>();
 builder.Services.AddScoped<IKnowledgeChunkService, KnowledgeChunkService>();
 builder.Services.AddScoped<IKnowledgeEmbeddingService, KnowledgeEmbeddingService>();
+builder.Services.AddScoped<ITicketDraftReplyService, TicketDraftReplyService>();
+builder.Services.AddScoped<ITicketDraftReplyGenerator, FakeTicketDraftReplyGenerator>();
 
 var embeddingProvider = builder.Configuration["AI:EmbeddingProvider"] ?? "Fake";
 

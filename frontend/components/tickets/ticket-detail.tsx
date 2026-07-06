@@ -1,19 +1,22 @@
-"use client";
+"use client"
 
-import { PriorityBadge, StatusBadge } from "@/components/tickets/ticket-status-badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
-import { ticketsApi } from "@/lib/api";
+import {
+  PriorityBadge,
+  StatusBadge,
+} from "@/components/tickets/ticket-status-badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Textarea } from "@/components/ui/textarea"
+import { ticketsApi } from "@/lib/api"
 import {
   ticketCategoryLabels,
   ticketChannelLabels,
   ticketPriorityLabels,
   ticketSentimentLabels,
   ticketStatusLabels,
-} from "@/types/ticket";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+} from "@/types/ticket"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   ArrowLeft,
   Bot,
@@ -23,12 +26,12 @@ import {
   MessageSquareText,
   Sparkles,
   User,
-} from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
+} from "lucide-react"
+import Link from "next/link"
+import { toast } from "sonner"
 
 export function TicketDetail({ ticketId }: { ticketId: string }) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   const {
     data: ticket,
@@ -37,19 +40,31 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
   } = useQuery({
     queryKey: ["tickets", ticketId],
     queryFn: () => ticketsApi.getById(ticketId),
-  });
+  })
 
   const analyzeTicket = useMutation({
     mutationFn: () => ticketsApi.analyze(ticketId),
     onSuccess: (updatedTicket) => {
-      queryClient.setQueryData(["tickets", ticketId], updatedTicket);
-      queryClient.invalidateQueries({ queryKey: ["tickets"] });
-      toast.success("Ticket analyzed with mock AI");
+      queryClient.setQueryData(["tickets", ticketId], updatedTicket)
+      queryClient.invalidateQueries({ queryKey: ["tickets"] })
+      toast.success("Ticket analyzed with mock AI")
     },
     onError: () => {
-      toast.error("Could not analyze ticket");
+      toast.error("Could not analyze ticket")
     },
-  });
+  })
+
+  const generateDraftReply = useMutation({
+    mutationFn: () => ticketsApi.generateDraftReply(ticketId),
+    onSuccess: (updatedTicket) => {
+      queryClient.setQueryData(["tickets", ticketId], updatedTicket)
+      queryClient.invalidateQueries({ queryKey: ["tickets"] })
+      toast.success("Draft reply generated")
+    },
+    onError: () => {
+      toast.error("Could not generate draft reply")
+    },
+  })
 
   if (isLoading) {
     return (
@@ -61,7 +76,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
           <Skeleton className="h-96 w-full" />
         </div>
       </div>
-    );
+    )
   }
 
   if (isError || !ticket) {
@@ -69,7 +84,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       <div className="rounded-xl border border-rose-200 bg-rose-50 p-8 text-sm text-rose-700">
         Could not load this ticket.
       </div>
-    );
+    )
   }
 
   return (
@@ -163,11 +178,25 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                   </p>
                 </div>
               </div>
-              <Textarea
-                className="min-h-36 bg-white"
-                placeholder="Draft reply will appear here..."
-                disabled
-              />
+              <div className="space-y-3">
+                <Button
+                  variant="outline"
+                  onClick={() => generateDraftReply.mutate()}
+                  disabled={generateDraftReply.isPending}
+                >
+                  <Bot className="size-4" />
+                  {generateDraftReply.isPending
+                    ? "Generating draft..."
+                    : "Generate draft reply"}
+                </Button>
+
+                <Textarea
+                  className="min-h-40 bg-white"
+                  placeholder="Draft reply will appear here..."
+                  value={ticket.aiDraftReply ?? ""}
+                  readOnly
+                />
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -178,7 +207,10 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
               <CardTitle>Ticket properties</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-              <Property label="Status" value={ticketStatusLabels[ticket.status]} />
+              <Property
+                label="Status"
+                value={ticketStatusLabels[ticket.status]}
+              />
               <Property
                 label="Priority"
                 value={ticketPriorityLabels[ticket.priority]}
@@ -191,7 +223,10 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                 label="Sentiment"
                 value={ticketSentimentLabels[ticket.sentiment]}
               />
-              <Property label="Channel" value={ticketChannelLabels[ticket.channel]} />
+              <Property
+                label="Channel"
+                value={ticketChannelLabels[ticket.channel]}
+              />
             </CardContent>
           </Card>
 
@@ -226,7 +261,11 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                 description="Initial customer issue was captured."
               />
               <TimelineItem
-                title={ticket.aiSummary ? "AI analysis completed" : "Waiting for AI analysis"}
+                title={
+                  ticket.aiSummary
+                    ? "AI analysis completed"
+                    : "Waiting for AI analysis"
+                }
                 description={
                   ticket.aiSummary
                     ? "Mock AI triage updated summary, sentiment, priority, and category."
@@ -238,7 +277,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
         </aside>
       </div>
     </div>
-  );
+  )
 }
 
 function Property({ label, value }: { label: string; value: string }) {
@@ -247,15 +286,15 @@ function Property({ label, value }: { label: string; value: string }) {
       <span className="text-slate-500">{label}</span>
       <span className="font-medium">{value}</span>
     </div>
-  );
+  )
 }
 
 function TimelineItem({
   title,
   description,
 }: {
-  title: string;
-  description: string;
+  title: string
+  description: string
 }) {
   return (
     <div className="flex gap-3">
@@ -267,5 +306,5 @@ function TimelineItem({
         <p className="mt-1 text-slate-500">{description}</p>
       </div>
     </div>
-  );
+  )
 }
