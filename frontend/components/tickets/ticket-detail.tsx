@@ -26,6 +26,7 @@ import {
   MessageSquareText,
   Sparkles,
   User,
+  Copy,
 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -47,7 +48,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
     onSuccess: (updatedTicket) => {
       queryClient.setQueryData(["tickets", ticketId], updatedTicket)
       queryClient.invalidateQueries({ queryKey: ["tickets"] })
-      toast.success("Ticket analyzed with mock AI")
+      toast.success("Ticket analyzed")
     },
     onError: () => {
       toast.error("Could not analyze ticket")
@@ -65,6 +66,13 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       toast.error("Could not generate draft reply")
     },
   })
+
+  const copyDraftReply = async () => {
+    if (!ticket?.aiDraftReply) return
+
+    await navigator.clipboard.writeText(ticket.aiDraftReply)
+    toast.success("Draft reply copied")
+  }
 
   if (isLoading) {
     return (
@@ -179,16 +187,29 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                 </div>
               </div>
               <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  onClick={() => generateDraftReply.mutate()}
-                  disabled={generateDraftReply.isPending}
-                >
-                  <Bot className="size-4" />
-                  {generateDraftReply.isPending
-                    ? "Generating draft..."
-                    : "Generate draft reply"}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => generateDraftReply.mutate()}
+                    disabled={generateDraftReply.isPending || !ticket.aiSummary}
+                  >
+                    <Bot className="size-4" />
+                    {!ticket.aiSummary
+                      ? "Analyze first"
+                      : generateDraftReply.isPending
+                        ? "Generating draft..."
+                        : "Generate draft reply"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyDraftReply}
+                    disabled={!ticket.aiDraftReply}
+                  >
+                    <Copy className="size-4" />
+                    Copy reply
+                  </Button>
+                </div>
 
                 <Textarea
                   className="min-h-40 bg-white"
@@ -268,10 +289,16 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                 }
                 description={
                   ticket.aiSummary
-                    ? "Mock AI triage updated summary, sentiment, priority, and category."
+                    ? "AI triage updated summary, sentiment, priority, and category."
                     : "Run AI analysis to triage this ticket."
                 }
               />
+              {ticket.aiDraftReply && (
+                <TimelineItem
+                  title="Draft reply generated"
+                  description="A suggested customer response is ready for review."
+                />
+              )}
             </CardContent>
           </Card>
         </aside>
