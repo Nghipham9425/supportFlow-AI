@@ -19,20 +19,28 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   ArrowLeft,
+  BadgeCheck,
   Bot,
   BookOpen,
   Clock,
+  Copy,
+  FileText,
   Mail,
   MessageSquareText,
+  Send,
   Sparkles,
   User,
-  Copy,
 } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
 import { toast } from "sonner"
 
 export function TicketDetail({ ticketId }: { ticketId: string }) {
   const queryClient = useQueryClient()
+  const [draftEdit, setDraftEdit] = useState<{
+    ticketId: string
+    value: string
+  } | null>(null)
 
   const {
     data: ticket,
@@ -60,19 +68,16 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
     onSuccess: (updatedTicket) => {
       queryClient.setQueryData(["tickets", ticketId], updatedTicket)
       queryClient.invalidateQueries({ queryKey: ["tickets"] })
+      setDraftEdit({
+        ticketId,
+        value: updatedTicket.aiDraftReply ?? "",
+      })
       toast.success("Draft reply generated")
     },
     onError: () => {
       toast.error("Could not generate draft reply")
     },
   })
-
-  const copyDraftReply = async () => {
-    if (!ticket?.aiDraftReply) return
-
-    await navigator.clipboard.writeText(ticket.aiDraftReply)
-    toast.success("Draft reply copied")
-  }
 
   if (isLoading) {
     return (
@@ -93,6 +98,18 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
         Could not load this ticket.
       </div>
     )
+  }
+
+  const draftReply =
+    draftEdit?.ticketId === ticketId
+      ? draftEdit.value
+      : ticket.aiDraftReply ?? ""
+
+  const copyDraftReply = async () => {
+    if (!draftReply.trim()) return
+
+    await navigator.clipboard.writeText(draftReply)
+    toast.success("Draft reply copied")
   }
 
   return (
@@ -124,14 +141,28 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
             </p>
           </div>
         </div>
-        <Button
-          className="bg-emerald-600 text-white hover:bg-emerald-700"
-          disabled={analyzeTicket.isPending}
-          onClick={() => analyzeTicket.mutate()}
-        >
-          <Sparkles className="size-4" />
-          {analyzeTicket.isPending ? "Analyzing..." : "Analyze with AI"}
-        </Button>
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row md:items-center">
+          <Button
+            className="bg-emerald-600 text-white hover:bg-emerald-700"
+            disabled={analyzeTicket.isPending}
+            onClick={() => analyzeTicket.mutate()}
+          >
+            <Sparkles className="size-4" />
+            {analyzeTicket.isPending ? "Analyzing..." : "Analyze with AI"}
+          </Button>
+          <Button
+            variant="outline"
+            disabled={generateDraftReply.isPending || !ticket.aiSummary}
+            onClick={() => generateDraftReply.mutate()}
+          >
+            <Bot className="size-4" />
+            {!ticket.aiSummary
+              ? "Analyze first"
+              : generateDraftReply.isPending
+                ? "Drafting..."
+                : "Draft reply"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
@@ -152,22 +183,53 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
 
           <Card className="border border-slate-200 bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bot className="size-4 text-emerald-600" />
-                AI workspace
-              </CardTitle>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bot className="size-4 text-emerald-600" />
+                    AI workspace
+                  </CardTitle>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Triage the request, gather context, then review the reply
+                    before sending.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
+                  <Sparkles className="size-3.5" />
+                  Human review required
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-sm font-medium">
-                    <Sparkles className="size-4 text-emerald-600" />
-                    AI summary
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Sparkles className="size-4 text-emerald-600" />
+                      AI triage
+                    </div>
+                    <StepState done={Boolean(ticket.aiSummary)} />
                   </div>
                   {ticket.aiSummary ? (
-                    <p className="text-sm leading-6 text-slate-700">
-                      {ticket.aiSummary}
-                    </p>
+                    <div className="space-y-3">
+                      <p className="text-sm leading-6 text-slate-700">
+                        {ticket.aiSummary}
+                      </p>
+                      <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
+                        <MiniMetric
+                          label="Category"
+                          value={ticketCategoryLabels[ticket.category]}
+                        />
+                        <MiniMetric
+                          label="Sentiment"
+                          value={ticketSentimentLabels[ticket.sentiment]}
+                        />
+                        <MiniMetric
+                          label="Priority"
+                          value={ticketPriorityLabels[ticket.priority]}
+                        />
+                      </div>
+                    </div>
                   ) : (
                     <p className="text-sm text-slate-500">
                       Run analysis to classify the ticket and generate a concise
@@ -175,10 +237,15 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                     </p>
                   )}
                 </div>
-                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-sm font-medium">
-                    <BookOpen className="size-4 text-sky-600" />
-                    Related knowledge
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <BookOpen className="size-4 text-sky-600" />
+                      Knowledge context
+                    </div>
+                    <span className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-500">
+                      Soon
+                    </span>
                   </div>
                   <p className="text-sm text-slate-500">
                     Retrieved articles and citations will appear here after RAG
@@ -186,36 +253,41 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                   </p>
                 </div>
               </div>
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => generateDraftReply.mutate()}
-                    disabled={generateDraftReply.isPending || !ticket.aiSummary}
-                  >
-                    <Bot className="size-4" />
-                    {!ticket.aiSummary
-                      ? "Analyze first"
-                      : generateDraftReply.isPending
-                        ? "Generating draft..."
-                        : "Generate draft reply"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={copyDraftReply}
-                    disabled={!ticket.aiDraftReply}
-                  >
-                    <Copy className="size-4" />
-                    Copy reply
-                  </Button>
+              <div className="rounded-lg border border-slate-200">
+                <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <FileText className="size-4 text-slate-600" />
+                      Draft reply
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Edit the suggested response before copying or sending.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyDraftReply}
+                      disabled={!draftReply.trim()}
+                    >
+                      <Copy className="size-4" />
+                      Copy
+                    </Button>
+                    <Button size="sm" disabled>
+                      <Send className="size-4" />
+                      Send later
+                    </Button>
+                  </div>
                 </div>
 
                 <Textarea
-                  className="min-h-40 bg-white"
+                  className="min-h-52 resize-y border-0 bg-white p-4 shadow-none focus-visible:ring-0"
                   placeholder="Draft reply will appear here..."
-                  value={ticket.aiDraftReply ?? ""}
-                  readOnly
+                  value={draftReply}
+                  onChange={(event) =>
+                    setDraftEdit({ ticketId, value: event.target.value })
+                  }
                 />
               </div>
             </CardContent>
@@ -303,6 +375,35 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
           </Card>
         </aside>
       </div>
+    </div>
+  )
+}
+
+function StepState({ done }: { done: boolean }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-500">
+      {done ? (
+        <>
+          <BadgeCheck className="size-3.5 text-emerald-600" />
+          Ready
+        </>
+      ) : (
+        <>
+          <Clock className="size-3.5" />
+          Pending
+        </>
+      )}
+    </span>
+  )
+}
+
+function MiniMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-slate-200 bg-white px-3 py-2">
+      <p className="text-[11px] font-medium uppercase text-slate-400">
+        {label}
+      </p>
+      <p className="mt-1 font-medium text-slate-700">{value}</p>
     </div>
   )
 }
