@@ -51,6 +51,15 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
     queryFn: () => ticketsApi.getById(ticketId),
   })
 
+  const {
+    data: relatedKnowledge = [],
+    isLoading: isRelatedKnowledgeLoading,
+    isError: isRelatedKnowledgeError,
+  } = useQuery({
+    queryKey: ["tickets", ticketId, "related-knowledge"],
+    queryFn: () => ticketsApi.getRelatedKnowledge(ticketId),
+  })
+
   const analyzeTicket = useMutation({
     mutationFn: () => ticketsApi.analyze(ticketId),
     onSuccess: (updatedTicket) => {
@@ -103,7 +112,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
   const draftReply =
     draftEdit?.ticketId === ticketId
       ? draftEdit.value
-      : ticket.aiDraftReply ?? ""
+      : (ticket.aiDraftReply ?? "")
 
   const copyDraftReply = async () => {
     if (!draftReply.trim()) return
@@ -244,13 +253,45 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                       Knowledge context
                     </div>
                     <span className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-500">
-                      Soon
+                      {relatedKnowledge.length} matches
                     </span>
                   </div>
-                  <p className="text-sm text-slate-500">
-                    Retrieved articles and citations will appear here after RAG
-                    is connected.
-                  </p>
+                  {isRelatedKnowledgeLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full" />
+                    </div>
+                  ) : isRelatedKnowledgeError ? (
+                    <p className="text-sm text-rose-600">
+                      Could not load related knowledge.
+                    </p>
+                  ) : relatedKnowledge.length === 0 ? (
+                    <p className="text-sm text-slate-500">
+                      No related knowledge found yet. Prepare articles for AI or
+                      add more knowledge base content.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {relatedKnowledge.map((item) => (
+                        <div
+                          key={item.chunkId}
+                          className="rounded-md border border-slate-200 bg-white p-3"
+                        >
+                          <div className="mb-1 flex items-start justify-between gap-3">
+                            <p className="text-sm font-medium text-slate-800">
+                              {item.articleTitle}
+                            </p>
+                            <span className="shrink-0 rounded-md bg-sky-50 px-2 py-1 text-xs font-medium text-sky-700">
+                              {item.score}
+                            </span>
+                          </div>
+                          <p className="line-clamp-3 text-xs leading-5 text-slate-500">
+                            {item.content}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="rounded-lg border border-slate-200">

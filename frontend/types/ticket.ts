@@ -70,3 +70,11 @@ export const ticketSentimentLabels: Record<TicketSentiment, string> = {
   4: "Frustrated",
   5: "Angry",
 }
+
+export type RelatedKnowledge = {
+  articleId: string
+  articleTitle: string
+  chunkId: string
+  content: string
+  score: number
+}
