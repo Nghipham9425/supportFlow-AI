@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SupportFlow.Application.Tickets;
 using SupportFlow.Application.Tickets.DTOs;
 using SupportFlow.Application.Tickets.Interfaces;
 
@@ -12,15 +13,18 @@ public class TicketsController : ControllerBase
     private readonly ITicketService _ticketService;
     private readonly ITicketAnalysisService _ticketAnalysisService;
     private readonly ITicketDraftReplyService _ticketDraftReplyService;
+    private readonly IRelatedKnowledgeService _relatedKnowledgeService;
 
     public TicketsController(
         ITicketService ticketService,
         ITicketAnalysisService ticketAnalysisService,
-        ITicketDraftReplyService ticketDraftReplyService)
+        ITicketDraftReplyService ticketDraftReplyService,
+        IRelatedKnowledgeService relatedKnowledgeService)
     {
         _ticketService = ticketService;
         _ticketAnalysisService = ticketAnalysisService;
         _ticketDraftReplyService = ticketDraftReplyService;
+        _relatedKnowledgeService = relatedKnowledgeService;
     }
     [HttpGet]
     public async Task<ActionResult<List<TicketDto>>> GetTickets()
@@ -97,5 +101,13 @@ public class TicketsController : ControllerBase
         var ticket = await _ticketDraftReplyService.GenerateDraftReplyAsync(id);
         if (ticket is null) return NotFound();
         return Ok(ticket);
+    }
+    [HttpGet("{id:guid}/related-knowledge")]
+    public async Task<ActionResult<IReadOnlyList<RelatedKnowledgeDto>>> GetRelatedKnowledge(Guid id,
+    CancellationToken cancellationToken = default)
+    {
+        var relatedKnowledge = await _relatedKnowledgeService.GetForTicketAsync(id, cancellationToken);
+
+        return Ok(relatedKnowledge);
     }
 }
