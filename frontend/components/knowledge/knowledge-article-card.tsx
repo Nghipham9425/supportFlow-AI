@@ -25,6 +25,28 @@ import { RegenerateChunksButton } from "./regenerate-chunks-button"
 import { ViewChunksDialog } from "./view-chunks-dialog"
 import { GenerateEmbeddingsButton } from "./generate-embeddings-button"
 
+function AiReadinessBadge({
+  isReady,
+  chunkCount,
+}: {
+  isReady: boolean
+  chunkCount: number
+}) {
+  if (isReady) {
+    return (
+      <span className="w-fit rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+        Ready for AI - {chunkCount} chunks
+      </span>
+    )
+  }
+
+  return (
+    <span className="w-fit rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+      Needs preparation
+    </span>
+  )
+}
+
 export function KnowledgeArticleCard({
   article,
 }: {
@@ -50,15 +72,10 @@ export function KnowledgeArticleCard({
               <BookOpen className="size-4" />
             </span>
             <KnowledgeCategoryBadge category={article.category} />
-            {article.isAiReady ? (
-              <span className="w-fit rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                AI ready - {article.chunkCount} chunks
-              </span>
-            ) : (
-              <span className="w-fit rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
-                Not prepared
-              </span>
-            )}
+            <AiReadinessBadge
+              isReady={article.isAiReady}
+              chunkCount={article.chunkCount}
+            />
           </div>
           <CardTitle className="line-clamp-2 text-base leading-6">
             {article.title}
@@ -69,6 +86,20 @@ export function KnowledgeArticleCard({
         <p className="line-clamp-4 text-sm leading-6 text-slate-600">
           {article.content}
         </p>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+            <p className="font-medium text-slate-700">
+              {article.chunkCount}
+            </p>
+            <p className="text-slate-500">Chunks prepared</p>
+          </div>
+          <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+            <p className="font-medium text-slate-700">
+              {article.isAiReady ? "Ready" : "Pending"}
+            </p>
+            <p className="text-slate-500">AI retrieval</p>
+          </div>
+        </div>
         <div className="border-t border-slate-100 pt-3 text-xs text-slate-500">
           Updated{" "}
           {new Intl.DateTimeFormat("en", {

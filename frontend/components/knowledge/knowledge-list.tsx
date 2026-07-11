@@ -14,7 +14,8 @@ export function KnowledgeList({ articles }: { articles: KnowledgeArticle[] }) {
           </div>
           <p className="text-sm font-medium">No knowledge articles found</p>
           <p className="mt-1 text-sm text-slate-500">
-            Create articles that future AI retrieval can cite in support replies.
+            Add your first support article to start building AI retrieval
+            context.
           </p>
         </div>
       </div>
