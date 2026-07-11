@@ -12,19 +12,26 @@ public class TicketDraftReplyService : ITicketDraftReplyService
 {
     private readonly AppDbContext _db;
     private readonly ITicketDraftReplyGenerator _draftReplyGenerator;
+    private readonly IRelatedKnowledgeService _relatedKnowledgeService;
 
     public TicketDraftReplyService(
         AppDbContext db,
-        ITicketDraftReplyGenerator draftReplyGenerator)
+        ITicketDraftReplyGenerator draftReplyGenerator,
+        IRelatedKnowledgeService relatedKnowledgeService)
     {
         _db = db;
         _draftReplyGenerator = draftReplyGenerator;
+        _relatedKnowledgeService = relatedKnowledgeService;
     }
     public async Task<TicketDto?> GenerateDraftReplyAsync(Guid ticketId)
     {
         var ticket = await _db.Tickets.FirstOrDefaultAsync(ticket => ticket.Id == ticketId);
         if (ticket is null) return null;
-        var draftReply = await _draftReplyGenerator.GenerateDraftReplyAsync(ToDto(ticket));
+
+        var ticketDto = ToDto(ticket);
+        var relatedKnowledge =await _relatedKnowledgeService.GetForTicketAsync(ticketId);
+
+        var draftReply =await _draftReplyGenerator.GenerateDraftReplyAsync(ticketDto, relatedKnowledge);     
 
         ticket.AiDraftReply = draftReply;
         ticket.Status = TicketStatus.Drafted;
