@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Pgvector.EntityFrameworkCore;
 using SupportFlow.Application.Tickets.Interfaces;
 using SupportFlow.Infrastructure.Persistence;
 using SupportFlow.Infrastructure.Tickets;
@@ -6,15 +7,21 @@ using SupportFlow.Infrastructure.Knowledge;
 using SupportFlow.Application.Knowledge.Interfaces;
 using SupportFlow.Application.AI.Interfaces;
 using SupportFlow.Infrastructure.AI;
+using SupportFlow.Infrastructure.AI.OpenAI;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.Configure<OpenAIOptions>(
+    builder.Configuration.GetSection("OpenAI"));
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions => npgsqlOptions.UseVector());
 });
 
 builder.Services.AddScoped<ITicketService, TicketService>();
@@ -35,8 +42,7 @@ if (embeddingProvider.Equals("Fake", StringComparison.OrdinalIgnoreCase))
 }
 else if (embeddingProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
 {
-    throw new InvalidOperationException(
-        "OpenAI embedding provider is not implemented yet. Set AI:EmbeddingProvider to Fake.");
+    builder.Services.AddHttpClient<IEmbeddingProvider, OpenAIEmbeddingProvider>();
 }
 else
 {

@@ -63,3 +63,5 @@ secrets.json
 appsettings.Local.json
 appsettings.*.local.json
 
+AGENTS.md
+docs/NEXT_AGENT_PLAN.md

@@ -1,5 +1,6 @@
-namespace SupportFlow.Domain.Entities;
+using Pgvector;
 
+namespace SupportFlow.Domain.Entities;
 public class KnowledgeChunk
 {
     public Guid Id { get; set; } = Guid.NewGuid();
@@ -10,7 +11,7 @@ public class KnowledgeChunk
     public string Content { get; set; } = string.Empty;
 
     public int ChunkIndex { get; set; }
-
+    public Vector? Embedding { get; set; }
     public bool IsEmbedded { get; set; } = false;
 
     public DateTime? EmbeddedAt { get; set; }

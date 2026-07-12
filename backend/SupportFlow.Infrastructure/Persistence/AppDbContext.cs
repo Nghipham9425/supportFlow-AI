@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Pgvector.EntityFrameworkCore;
 using SupportFlow.Domain.Entities;
 
 namespace SupportFlow.Infrastructure.Persistence;
@@ -18,6 +19,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.HasPostgresExtension("vector");
         modelBuilder.Entity<Ticket>(entity =>
         {
             entity.HasKey(ticket => ticket.Id);
@@ -86,11 +88,13 @@ public class AppDbContext : DbContext
             entity.HasKey(chunk => chunk.Id);
             entity.Property(chunk => chunk.Content).IsRequired();
             entity.Property(chunk => chunk.ChunkIndex).IsRequired();
+            entity.Property(chunk => chunk.Embedding)
+                .HasColumnType("vector(1536)");
 
             entity.HasOne(chunk => chunk.KnowledgeArticle)
                 .WithMany()
                 .HasForeignKey(chunk => chunk.KnowledgeArticleId)
                 .OnDelete(DeleteBehavior.Cascade);
-                });
+        });
     }
 }
