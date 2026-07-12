@@ -94,13 +94,20 @@ public class KnowledgeArticlesController : ControllerBase
     [HttpPost("{id:guid}/chunks/embed")]
     public async Task<ActionResult<List<KnowledgeChunkDto>>> GenerateEmbeddings(Guid id)
     {
-        var chunks = await _knowledgeEmbeddingService.GenerateEmbeddingsAsync(id);
-
-        if (chunks is null)
+        try
         {
-            return NotFound();
-        }
+            var chunks = await _knowledgeEmbeddingService.GenerateEmbeddingsAsync(id);
 
-        return Ok(chunks);
+            if (chunks is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(chunks);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
     }
 }
