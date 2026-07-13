@@ -14,7 +14,7 @@ export function GenerateEmbeddingsButton({ articleId }: { articleId: string }) {
       queryClient.invalidateQueries({
         queryKey: ["knowledge-article-chunks", articleId],
       })
-
+      queryClient.invalidateQueries({ queryKey: ["knowledge-articles"] })
       toast.success(`Generated embeddings for ${chunks.length} chunk(s)`)
     },
     onError: () => {

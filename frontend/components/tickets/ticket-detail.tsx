@@ -272,7 +272,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      {relatedKnowledge.map((item) => (
+                      {relatedKnowledge.map((item, index) => (
                         <div
                           key={item.chunkId}
                           className="rounded-md border border-slate-200 bg-white p-3"
@@ -282,7 +282,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                               {item.articleTitle}
                             </p>
                             <span className="shrink-0 rounded-md bg-sky-50 px-2 py-1 text-xs font-medium text-sky-700">
-                              {item.score}
+                              {index === 0 ? "Best match" : "Related"}
                             </span>
                           </div>
                           <p className="line-clamp-3 text-xs leading-5 text-slate-500">
