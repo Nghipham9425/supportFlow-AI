@@ -5,6 +5,7 @@ import {
   KnowledgeChunk,
   UpdateKnowledgeArticleInput,
 } from "@/types/knowledge"
+import { DashboardSummary } from "@/types/dashboard"
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5059/api"
@@ -26,6 +27,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   return response.json() as Promise<T>
+}
+
+export const dashboardApi = {
+  getSummary: () => request<DashboardSummary>("/dashboard/summary"),
 }
 
 export const ticketsApi = {

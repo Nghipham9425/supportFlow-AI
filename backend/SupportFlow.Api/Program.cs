@@ -6,8 +6,10 @@ using SupportFlow.Infrastructure.Tickets;
 using SupportFlow.Infrastructure.Knowledge;
 using SupportFlow.Application.Knowledge.Interfaces;
 using SupportFlow.Application.AI.Interfaces;
+using SupportFlow.Application.Dashboard.Interfaces;
 using SupportFlow.Infrastructure.AI;
 using SupportFlow.Infrastructure.AI.OpenAI;
+using SupportFlow.Infrastructure.Dashboard;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +35,7 @@ builder.Services.AddScoped<IKnowledgeEmbeddingService, KnowledgeEmbeddingService
 builder.Services.AddScoped<ITicketDraftReplyService, TicketDraftReplyService>();
 builder.Services.AddScoped<ITicketDraftReplyGenerator, FakeTicketDraftReplyGenerator>();
 builder.Services.AddScoped<IRelatedKnowledgeService, RelatedKnowledgeService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var embeddingProvider = builder.Configuration["AI:EmbeddingProvider"] ?? "Fake";
 
