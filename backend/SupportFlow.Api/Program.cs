@@ -33,7 +33,6 @@ builder.Services.AddScoped<IKnowledgeArticleService, KnowledgeArticleService>();
 builder.Services.AddScoped<IKnowledgeChunkService, KnowledgeChunkService>();
 builder.Services.AddScoped<IKnowledgeEmbeddingService, KnowledgeEmbeddingService>();
 builder.Services.AddScoped<ITicketDraftReplyService, TicketDraftReplyService>();
-builder.Services.AddScoped<ITicketDraftReplyGenerator, FakeTicketDraftReplyGenerator>();
 builder.Services.AddScoped<IRelatedKnowledgeService, RelatedKnowledgeService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
@@ -51,6 +50,22 @@ else
 {
     throw new InvalidOperationException(
         $"Unsupported embedding provider '{embeddingProvider}'. Supported values: Fake, OpenAI.");
+}
+
+var draftReplyProvider = builder.Configuration["AI:DraftReplyProvider"] ?? "Fake";
+
+if (draftReplyProvider.Equals("Fake", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddScoped<ITicketDraftReplyGenerator, FakeTicketDraftReplyGenerator>();
+}
+else if (draftReplyProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddHttpClient<ITicketDraftReplyGenerator, OpenAITicketDraftReplyGenerator>();
+}
+else
+{
+    throw new InvalidOperationException(
+        $"Unsupported draft reply provider '{draftReplyProvider}'. Supported values: Fake, OpenAI.");
 }
 
 builder.Services.AddControllers();
