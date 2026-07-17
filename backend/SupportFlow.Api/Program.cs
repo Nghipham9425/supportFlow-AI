@@ -28,7 +28,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<ITicketAnalysisService, TicketAnalysisService>();
-builder.Services.AddScoped<ITicketAnalyzer, FakeTicketAnalyzer>();
 builder.Services.AddScoped<IKnowledgeArticleService, KnowledgeArticleService>();
 builder.Services.AddScoped<IKnowledgeChunkService, KnowledgeChunkService>();
 builder.Services.AddScoped<IKnowledgeEmbeddingService, KnowledgeEmbeddingService>();
@@ -66,6 +65,22 @@ else
 {
     throw new InvalidOperationException(
         $"Unsupported draft reply provider '{draftReplyProvider}'. Supported values: Fake, OpenAI.");
+}
+
+var analysisProvider = builder.Configuration["AI:AnalysisProvider"] ?? "Fake";
+
+if (analysisProvider.Equals("Fake", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddScoped<ITicketAnalyzer, FakeTicketAnalyzer>();
+}
+else if (analysisProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddHttpClient<ITicketAnalyzer, OpenAITicketAnalyzer>();
+}
+else
+{
+    throw new InvalidOperationException(
+        $"Unsupported analysis provider '{analysisProvider}'. Supported values: Fake, OpenAI.");
 }
 
 builder.Services.AddControllers();
