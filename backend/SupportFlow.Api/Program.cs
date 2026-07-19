@@ -84,12 +84,21 @@ else
 }
 
 builder.Services.AddControllers();
+
+var frontendUrl = builder.Configuration["FrontendUrl"];
+var allowedOrigins = new[]
+{
+    "http://localhost:3000",
+frontendUrl
+}
+.Where(url => !string.IsNullOrWhiteSpace(url)).ToArray();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:3000")
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -97,15 +106,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
 }
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 
 // app.UseHttpsRedirection();
 
 app.UseCors("Frontend");
+
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 app.MapControllers();
 
