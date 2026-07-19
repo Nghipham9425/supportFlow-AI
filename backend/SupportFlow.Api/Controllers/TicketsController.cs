@@ -86,7 +86,9 @@ public class TicketsController : ControllerBase
     [HttpPost("{id:guid}/analyze")]
     public async Task<ActionResult<TicketDto>> AnalyzeTicket(Guid id)
     {
-        var ticket = await _ticketAnalysisService.AnalyzeTicketAsync(id);
+        try
+        {
+            var ticket = await _ticketAnalysisService.AnalyzeTicketAsync(id);
 
         if (ticket is null)
         {
@@ -94,13 +96,29 @@ public class TicketsController : ControllerBase
         }
 
         return Ok(ticket);
+        }
+        catch (InvalidOperationException ex)
+        {
+
+            return Conflict(new { message = ex.Message });
+        }
+        
     }
     [HttpPost("{id:guid}/draft-reply")]
     public async Task<ActionResult<TicketDto>> GenerateDraftReply(Guid id)
     {
-        var ticket = await _ticketDraftReplyService.GenerateDraftReplyAsync(id);
-        if (ticket is null) return NotFound();
-        return Ok(ticket);
+        try
+        {
+            var ticket = await _ticketDraftReplyService.GenerateDraftReplyAsync(id);
+                if (ticket is null) return NotFound();
+                return Ok(ticket);
+        }
+        catch (InvalidOperationException ex)
+        {
+
+            return Conflict(new { message = ex.Message });
+        }
+        
     }
     [HttpGet("{id:guid}/related-knowledge")]
     public async Task<ActionResult<IReadOnlyList<RelatedKnowledgeDto>>> GetRelatedKnowledge(Guid id,

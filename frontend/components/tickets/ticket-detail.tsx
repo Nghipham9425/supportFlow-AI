@@ -67,8 +67,10 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       queryClient.invalidateQueries({ queryKey: ["tickets"] })
       toast.success("Ticket analyzed")
     },
-    onError: () => {
-      toast.error("Could not analyze ticket")
+    onError: (error) => {
+      toast.error(
+        error instanceof Error ? error.message : "could not analyze ticket",
+      )
     },
   })
 
@@ -83,8 +85,12 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       })
       toast.success("Draft reply generated")
     },
-    onError: () => {
-      toast.error("Could not generate draft reply")
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not generate draft reply",
+      )
     },
   })
 
