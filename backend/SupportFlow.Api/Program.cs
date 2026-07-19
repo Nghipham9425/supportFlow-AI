@@ -122,8 +122,10 @@ using (var scope = app.Services.CreateScope())
 
 app.UseCors("Frontend");
 
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
-
+app.MapMethods(
+    "/health",
+    new[] { "GET", "HEAD" },
+    () => Results.Ok(new { status = "healthy" }));
 app.MapControllers();
 
 app.Run();
