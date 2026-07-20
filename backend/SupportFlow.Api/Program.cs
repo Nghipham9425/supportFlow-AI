@@ -10,6 +10,10 @@ using SupportFlow.Application.Dashboard.Interfaces;
 using SupportFlow.Infrastructure.AI;
 using SupportFlow.Infrastructure.AI.OpenAI;
 using SupportFlow.Infrastructure.Dashboard;
+using SupportFlow.Application.Auth.Interfaces;
+using SupportFlow.Infrastructure.Auth;
+using Microsoft.AspNetCore.Identity;
+using SupportFlow.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +38,8 @@ builder.Services.AddScoped<IKnowledgeEmbeddingService, KnowledgeEmbeddingService
 builder.Services.AddScoped<ITicketDraftReplyService, TicketDraftReplyService>();
 builder.Services.AddScoped<IRelatedKnowledgeService, RelatedKnowledgeService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordHasher<User>,PasswordHasher<User>>();
 
 var embeddingProvider = builder.Configuration["AI:EmbeddingProvider"] ?? "Fake";
 

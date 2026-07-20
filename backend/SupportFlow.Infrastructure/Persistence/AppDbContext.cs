@@ -15,11 +15,38 @@ public class AppDbContext : DbContext
     public DbSet<KnowledgeArticle> KnowledgeArticles => Set<KnowledgeArticle>();
     public DbSet<KnowledgeChunk> KnowledgeChunks => Set<KnowledgeChunk>();
 
+    public DbSet<User> Users => Set<User>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasPostgresExtension("vector");
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(user => user.Id);
+
+            entity.Property(user => user.Name)
+            .HasMaxLength(150)
+            .IsRequired();
+
+            entity.Property(user => user.Email)
+            .HasMaxLength(255)
+            .IsRequired();
+
+            entity.HasIndex(user => user.Email)
+            .IsUnique();
+
+            entity.Property(user => user.PasswordHash)
+            .IsRequired();
+
+            entity.Property(user => user.Role)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .IsRequired();
+
+        });
+
         modelBuilder.Entity<Ticket>(entity =>
         {
             entity.HasKey(ticket => ticket.Id);
