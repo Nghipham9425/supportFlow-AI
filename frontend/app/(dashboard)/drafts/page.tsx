@@ -64,14 +64,14 @@ export default function DraftsPage() {
               key={ticket.id}
               className="border border-slate-200 bg-white shadow-sm"
             >
-              <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+              <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <CardTitle className="text-base">{ticket.subject}</CardTitle>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {ticket.customerName} · {ticket.customerEmail}
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-2 text-xs">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="rounded-md bg-sky-50 px-2 py-1 font-medium text-sky-700">
                     {ticketStatusLabels[ticket.status]}
                   </span>

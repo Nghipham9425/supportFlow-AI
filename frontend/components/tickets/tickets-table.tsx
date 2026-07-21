@@ -59,6 +59,44 @@ export function TicketsTable({ tickets }: { tickets: Ticket[] }) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="divide-y divide-slate-200 md:hidden">
+        {tickets.map((ticket) => (
+          <div
+            key={ticket.id}
+            className="cursor-pointer space-y-3 p-4 active:bg-slate-50"
+            onClick={() => router.push(`/tickets/${ticket.id}`)}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate font-medium">{ticket.customerName}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {ticket.customerEmail}
+                </p>
+              </div>
+              <TicketDeleteAction
+                ticket={ticket}
+                isPending={deleteTicket.isPending}
+                onDelete={() => deleteTicket.mutate(ticket.id)}
+              />
+            </div>
+            <div>
+              <p className="line-clamp-2 text-sm font-medium">{ticket.subject}</p>
+              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                {ticket.description}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <PriorityBadge priority={ticket.priority} />
+              <StatusBadge status={ticket.status} />
+              <span className="text-xs text-muted-foreground">
+                {ticketChannelLabels[ticket.channel]}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50">
@@ -111,51 +149,65 @@ export function TicketsTable({ tickets }: { tickets: Ticket[] }) {
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end opacity-70 transition-opacity group-hover:opacity-100">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={(event) => event.stopPropagation()}
-                        disabled={deleteTicket.isPending}
-                      >
-                        <Trash2 className="size-4" />
-                        <span className="sr-only">Delete ticket</span>
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent
-                      onClick={(event) => event.stopPropagation()}
-                    >
-                      <AlertDialogHeader>
-                        <AlertDialogMedia className="bg-rose-50 text-rose-700">
-                          <AlertTriangle className="size-5" />
-                        </AlertDialogMedia>
-                        <AlertDialogTitle>Delete ticket?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete the ticket from{" "}
-                          <span className="font-medium text-foreground">
-                            {ticket.customerName}
-                          </span>
-                          . This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          variant="destructive"
-                          onClick={() => deleteTicket.mutate(ticket.id)}
-                        >
-                          Delete ticket
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <TicketDeleteAction
+                    ticket={ticket}
+                    isPending={deleteTicket.isPending}
+                    onDelete={() => deleteTicket.mutate(ticket.id)}
+                  />
                 </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
+  );
+}
+
+function TicketDeleteAction({
+  ticket,
+  isPending,
+  onDelete,
+}: {
+  ticket: Ticket;
+  isPending: boolean;
+  onDelete: () => void;
+}) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={(event) => event.stopPropagation()}
+          disabled={isPending}
+        >
+          <Trash2 className="size-4" />
+          <span className="sr-only">Delete ticket</span>
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent onClick={(event) => event.stopPropagation()}>
+        <AlertDialogHeader>
+          <AlertDialogMedia className="bg-rose-50 text-rose-700">
+            <AlertTriangle className="size-5" />
+          </AlertDialogMedia>
+          <AlertDialogTitle>Delete ticket?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete the ticket from{" "}
+            <span className="font-medium text-foreground">
+              {ticket.customerName}
+            </span>
+            . This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" onClick={onDelete}>
+            Delete ticket
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

@@ -5,12 +5,22 @@ import {
   BookOpen,
   Inbox,
   LayoutDashboard,
+  Menu,
   Settings,
   Ticket,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -59,13 +69,50 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-md border bg-background lg:hidden">
-              <Inbox className="size-4" />
-            </div>
-            <div>
+          <div className="flex min-w-0 items-center gap-3">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  className="lg:hidden"
+                >
+                  <Menu className="size-4" />
+                  <span className="sr-only">Open navigation</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[min(18rem,85vw)] p-0">
+                <SheetHeader className="border-b border-slate-200 px-5 py-5">
+                  <SheetTitle className="flex items-center gap-3">
+                    <span className="flex size-9 items-center justify-center rounded-md bg-slate-950 text-white">
+                      <Inbox className="size-4" />
+                    </span>
+                    SupportFlow
+                  </SheetTitle>
+                </SheetHeader>
+                <nav className="space-y-1 p-3">
+                  {navItems.map((item) => (
+                    <SheetClose key={item.href} asChild>
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          "flex h-10 items-center gap-3 rounded-md px-3 text-sm transition-colors",
+                          pathname.startsWith(item.href)
+                            ? "bg-slate-950 text-white shadow-sm"
+                            : "text-slate-500 hover:bg-slate-100 hover:text-slate-950",
+                        )}
+                      >
+                        <item.icon className="size-4" />
+                        {item.label}
+                      </Link>
+                    </SheetClose>
+                  ))}
+                </nav>
+              </SheetContent>
+            </Sheet>
+            <div className="min-w-0">
               <p className="text-sm font-medium">Support workspace</p>
-              <p className="text-xs text-slate-500">Tickets, knowledge, and AI drafts</p>
+              <p className="truncate text-xs text-slate-500">Tickets, knowledge, and AI drafts</p>
             </div>
           </div>
           <div className="hidden items-center gap-3 md:flex">

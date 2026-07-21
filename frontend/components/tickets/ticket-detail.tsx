@@ -459,7 +459,7 @@ function Property({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
       <span className="text-slate-500">{label}</span>
-      <span className="font-medium">{value}</span>
+      <span className="text-right font-medium break-words">{value}</span>
     </div>
   )
 }

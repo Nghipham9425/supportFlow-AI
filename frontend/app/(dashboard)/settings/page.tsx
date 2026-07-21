@@ -20,13 +20,13 @@ export default function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-slate-600">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <span>Embedding provider</span>
-              <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
+              <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
                 Fake / OpenAI
               </span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <span>Draft reply provider</span>
               <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
                 Fake / OpenAI
@@ -43,13 +43,13 @@ export default function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-slate-600">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <span>Database</span>
               <span className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">
                 PostgreSQL + pgvector
               </span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <span>API</span>
               <span className="rounded-md bg-sky-50 px-2 py-1 text-xs font-medium text-sky-700">
                 ASP.NET Core

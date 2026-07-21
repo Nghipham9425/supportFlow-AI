@@ -87,8 +87,8 @@ export default function TicketsPage() {
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <Tabs value={filter} onValueChange={(value) => setFilter(value as TicketFilter)}>
-            <TabsList>
+          <Tabs value={filter} onValueChange={(value) => setFilter(value as TicketFilter)} className="w-full lg:w-auto">
+            <TabsList className="w-full justify-start overflow-x-auto lg:w-fit">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="open">Open</TabsTrigger>
               <TabsTrigger value="high">High priority</TabsTrigger>
