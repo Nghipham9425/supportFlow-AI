@@ -1,4 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Pgvector.EntityFrameworkCore;
 using SupportFlow.Application.Tickets.Interfaces;
 using SupportFlow.Infrastructure.Persistence;
@@ -23,6 +26,42 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<OpenAIOptions>(
     builder.Configuration.GetSection("OpenAI"));
 
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection(JwtOptions.SectionName));
+
+var jwtOptions = builder.Configuration
+    .GetSection(JwtOptions.SectionName)
+    .Get<JwtOptions>()
+    ?? throw new InvalidOperationException("JWT configuration is missing.");
+
+if (string.IsNullOrWhiteSpace(jwtOptions.SecretKey))
+{
+    throw new InvalidOperationException("JWT secret key is missing.");
+}
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Issuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Audience,
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(
@@ -39,7 +78,8 @@ builder.Services.AddScoped<ITicketDraftReplyService, TicketDraftReplyService>();
 builder.Services.AddScoped<IRelatedKnowledgeService, RelatedKnowledgeService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPasswordHasher<User>,PasswordHasher<User>>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<ITokenService, JwtTokenService>();
 
 var embeddingProvider = builder.Configuration["AI:EmbeddingProvider"] ?? "Fake";
 
@@ -95,8 +135,9 @@ var frontendUrl = builder.Configuration["FrontendUrl"];
 var allowedOrigins = new[]
 {
     "http://localhost:3000",
-frontendUrl
+    frontendUrl
 }
+.OfType<string>()
 .Where(url => !string.IsNullOrWhiteSpace(url)).ToArray();
 
 builder.Services.AddCors(options =>
@@ -127,6 +168,8 @@ using (var scope = app.Services.CreateScope())
 // app.UseHttpsRedirection();
 
 app.UseCors("Frontend");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapMethods(
     "/health",

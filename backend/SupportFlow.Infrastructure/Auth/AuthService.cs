@@ -6,19 +6,22 @@ using SupportFlow.Domain.Entities;
 using SupportFlow.Domain.Enums;
 using SupportFlow.Infrastructure.Persistence;
 
+
 namespace SupportFlow.Infrastructure.Auth;
 
 public class AuthService : IAuthService
 {
     private readonly AppDbContext _db;
     private readonly IPasswordHasher<User> _passwordHasher;
-
+private readonly ITokenService _tokenService;
     public AuthService(
         AppDbContext db,
-        IPasswordHasher<User> passwordHasher)
+        IPasswordHasher<User> passwordHasher,
+        ITokenService tokenService)
     {
         _db = db;
         _passwordHasher = passwordHasher;
+        _tokenService = tokenService;
     }
 
     public async Task<AuthUserDto> RegisterAsync(RegisterUserDto request)
@@ -74,6 +77,51 @@ public class AuthService : IAuthService
             Email = user.Email,
             Role = user.Role,
             CreatedAt = user.CreatedAt
+        };
+    }
+
+    public async Task<AuthResponseDto> LoginAsync(LoginUserDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            throw new InvalidOperationException("Invalid email or password.");
+        }
+        var email = request.Email.Trim().ToLowerInvariant();
+
+        var user = await _db.Users.FirstOrDefaultAsync(user => user.Email == email);
+
+        if (user is null)
+        {
+            throw new InvalidOperationException(
+            "Invalid email or password.");
+        }
+
+        var verificationResult = _passwordHasher.VerifyHashedPassword(
+        user,
+        user.PasswordHash,
+        request.Password);
+        
+        if (verificationResult == PasswordVerificationResult.Failed)
+        {
+            throw new InvalidOperationException(
+                "Invalid email or password.");
+        }
+
+        if (verificationResult == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            user.PasswordHash = _passwordHasher.HashPassword(
+                user,
+                request.Password);
+
+            await _db.SaveChangesAsync();
+        }
+        var (accessToken, expiresAt) = _tokenService.CreateToken(user);
+
+        return new AuthResponseDto
+        {
+            AccessToken = accessToken,
+            ExpiresAt = expiresAt,
+            User = ToDto(user)
         };
     }
 }

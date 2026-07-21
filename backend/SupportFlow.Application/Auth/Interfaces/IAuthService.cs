@@ -5,4 +5,6 @@ namespace SupportFlow.Application.Auth.Interfaces;
 public interface IAuthService
 {
     Task<AuthUserDto> RegisterAsync(RegisterUserDto request);
+    Task<AuthResponseDto> LoginAsync(LoginUserDto request);
+
 }
