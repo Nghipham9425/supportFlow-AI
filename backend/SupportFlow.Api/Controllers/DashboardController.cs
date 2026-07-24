@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using SupportFlow.Application.Dashboard.DTOs;
 using SupportFlow.Application.Dashboard.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SupportFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
+[Authorize(Roles = "Admin")]
 public class DashboardController : ControllerBase
 {
     private readonly IDashboardService _dashboardService;

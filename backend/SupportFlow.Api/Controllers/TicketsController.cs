@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using SupportFlow.Application.Tickets;
 using SupportFlow.Application.Tickets.DTOs;
 using SupportFlow.Application.Tickets.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SupportFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/tickets")]
-
+[Authorize(Roles = "Admin")]
 public class TicketsController : ControllerBase
 {
     private readonly ITicketService _ticketService;
@@ -43,6 +44,7 @@ public class TicketsController : ControllerBase
         return Ok(ticket);
     }
 
+    [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult<TicketDto>> CreateTicket(CreateTicketDto request)
     {
@@ -54,11 +56,11 @@ public class TicketsController : ControllerBase
             ticket);
     }
 
-    
-     [HttpPatch("{id:guid}")]
+
+    [HttpPatch("{id:guid}")]
     public async Task<ActionResult<TicketDto>> UpdateTicket(
-        Guid id,
-        UpdateTicketDto request)
+       Guid id,
+       UpdateTicketDto request)
     {
         var ticket = await _ticketService.UpdateTicketAsync(id, request);
 
@@ -90,19 +92,19 @@ public class TicketsController : ControllerBase
         {
             var ticket = await _ticketAnalysisService.AnalyzeTicketAsync(id);
 
-        if (ticket is null)
-        {
-            return NotFound();
-        }
+            if (ticket is null)
+            {
+                return NotFound();
+            }
 
-        return Ok(ticket);
+            return Ok(ticket);
         }
         catch (InvalidOperationException ex)
         {
 
             return Conflict(new { message = ex.Message });
         }
-        
+
     }
     [HttpPost("{id:guid}/draft-reply")]
     public async Task<ActionResult<TicketDto>> GenerateDraftReply(Guid id)
@@ -110,15 +112,15 @@ public class TicketsController : ControllerBase
         try
         {
             var ticket = await _ticketDraftReplyService.GenerateDraftReplyAsync(id);
-                if (ticket is null) return NotFound();
-                return Ok(ticket);
+            if (ticket is null) return NotFound();
+            return Ok(ticket);
         }
         catch (InvalidOperationException ex)
         {
 
             return Conflict(new { message = ex.Message });
         }
-        
+
     }
     [HttpGet("{id:guid}/related-knowledge")]
     public async Task<ActionResult<IReadOnlyList<RelatedKnowledgeDto>>> GetRelatedKnowledge(Guid id,

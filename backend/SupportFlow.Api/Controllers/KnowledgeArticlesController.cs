@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using SupportFlow.Application.Knowledge.DTOs;
 using SupportFlow.Application.Knowledge.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SupportFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/knowledge-articles")]
+[Authorize(Roles = "Admin")]
 public class KnowledgeArticlesController : ControllerBase
 {
     private readonly IKnowledgeArticleService _knowledgeArticleService;

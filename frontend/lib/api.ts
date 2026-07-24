@@ -6,13 +6,17 @@ import {
   UpdateKnowledgeArticleInput,
 } from "@/types/knowledge"
 import { DashboardSummary } from "@/types/dashboard"
+import { AuthResponse, LoginInput } from "@/types/auth"
+import { getAccessToken } from "./auth-session"
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5059/api"
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const accessToken = getAccessToken()
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...options?.headers,
     },
     ...options,
@@ -90,5 +94,13 @@ export const knowledgeApi = {
   generateEmbeddings: (id: string) =>
     request<KnowledgeChunk[]>(`/knowledge-articles/${id}/chunks/embed`, {
       method: "POST",
+    }),
+}
+
+export const authApi = {
+  login: (input: LoginInput) =>
+    request<AuthResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(input),
     }),
 }

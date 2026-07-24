@@ -9,6 +9,7 @@ namespace SupportFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+[Authorize]
 public class AuthController : ControllerBase
 {
     private IAuthService _authService;
@@ -17,6 +18,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
     [HttpPost("register")]
+    [AllowAnonymous]
     public async Task<ActionResult<AuthUserDto>> Register(RegisterUserDto req)
     {
         try
@@ -30,6 +32,7 @@ public class AuthController : ControllerBase
         }
     }
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginUserDto req)
     {
         try
