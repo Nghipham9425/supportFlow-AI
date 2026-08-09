@@ -17,17 +17,20 @@ public class TicketsController : ControllerBase
     private readonly ITicketAnalysisService _ticketAnalysisService;
     private readonly ITicketDraftReplyService _ticketDraftReplyService;
     private readonly IRelatedKnowledgeService _relatedKnowledgeService;
+    private readonly ITicketReplyService _ticketReplyService;
 
     public TicketsController(
         ITicketService ticketService,
         ITicketAnalysisService ticketAnalysisService,
         ITicketDraftReplyService ticketDraftReplyService,
-        IRelatedKnowledgeService relatedKnowledgeService)
+        IRelatedKnowledgeService relatedKnowledgeService,
+        ITicketReplyService ticketReplyService)
     {
         _ticketService = ticketService;
         _ticketAnalysisService = ticketAnalysisService;
         _ticketDraftReplyService = ticketDraftReplyService;
         _relatedKnowledgeService = relatedKnowledgeService;
+        _ticketReplyService = ticketReplyService;
     }
     [HttpGet]
     public async Task<ActionResult<List<TicketDto>>> GetTickets()
@@ -153,5 +156,64 @@ public class TicketsController : ControllerBase
         var relatedKnowledge = await _relatedKnowledgeService.GetForTicketAsync(id, cancellationToken);
 
         return Ok(relatedKnowledge);
+    }
+
+    [HttpPost("{id:guid}/replies")]
+    public async Task<ActionResult<TicketReplyDto>> SendReply(
+        Guid id,
+        SendTicketReplyDto request,
+        CancellationToken cancellationToken)
+    {
+        var userIdValue =
+            User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var reply = await _ticketReplyService.SendReplyAsync(
+                id,
+                userId,
+                request,
+                cancellationToken);
+
+            if (reply is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(reply);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("{id:guid}/replies")]
+    public async Task<ActionResult<IReadOnlyList<TicketReplyDto>>> GetReplies(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var ticket = await _ticketService.GetTicketByIdAsync(id);
+
+        if (ticket is null)
+        {
+            return NotFound();
+        }
+
+        var replies = await _ticketReplyService.GetRepliesAsync(
+            id,
+            cancellationToken);
+
+        return Ok(replies);
     }
 }

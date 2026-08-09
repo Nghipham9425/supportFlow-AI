@@ -7,6 +7,7 @@ public enum TicketStatus
     Drafted = 3,
     Approved = 4,
     Rejected = 5,
-    Resolved = 6,
-    Closed = 7
+    PendingCustomer = 6,
+    Resolved = 7,
+    Closed = 8
 }

@@ -1,4 +1,10 @@
-import { CreateTicketInput, RelatedKnowledge, Ticket } from "@/types/ticket"
+import {
+  CreateTicketInput,
+  RelatedKnowledge,
+  SendTicketReplyInput,
+  Ticket,
+  TicketReply,
+} from "@/types/ticket"
 import {
   CreateKnowledgeArticleInput,
   KnowledgeArticle,
@@ -63,6 +69,13 @@ export const ticketsApi = {
     }),
   assignToMe: (id: string) =>
     request<Ticket>(`/tickets/${id}/assign-to-me`, { method: "POST" }),
+  sendReply: (id: string, input: SendTicketReplyInput) =>
+    request<TicketReply>(`/tickets/${id}/replies`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  getReplies: (id: string) =>
+    request<TicketReply[]>(`/tickets/${id}/replies`),
   remove: (id: string) =>
     request<void>(`/tickets/${id}`, {
       method: "DELETE",

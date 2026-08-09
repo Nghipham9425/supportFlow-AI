@@ -15,6 +15,8 @@ public class AppDbContext : DbContext
     public DbSet<KnowledgeArticle> KnowledgeArticles => Set<KnowledgeArticle>();
     public DbSet<KnowledgeChunk> KnowledgeChunks => Set<KnowledgeChunk>();
 
+    public DbSet<TicketReply> TicketReplies => Set<TicketReply>();
+
     public DbSet<User> Users => Set<User>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -101,6 +103,38 @@ public class AppDbContext : DbContext
             entity.HasIndex(ticket => ticket.AssignedToUserId);
 
         });
+
+        modelBuilder.Entity<TicketReply>(entity =>
+        {
+            entity.HasKey(reply => reply.Id);
+
+            entity.Property(reply => reply.RecipientEmail)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(reply => reply.Subject)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(reply => reply.Content)
+                .IsRequired();
+
+            entity.Property(reply => reply.ProviderMessageId)
+                .HasMaxLength(255);
+
+            entity.HasOne(reply => reply.Ticket)
+                .WithMany()
+                .HasForeignKey(reply => reply.TicketId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(reply => reply.SentByUser)
+                .WithMany()
+                .HasForeignKey(reply => reply.SentByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(reply => reply.TicketId);
+        });
+
         modelBuilder.Entity<KnowledgeArticle>(entity =>
         {
             entity.HasKey(article => article.Id);

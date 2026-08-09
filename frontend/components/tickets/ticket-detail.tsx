@@ -63,6 +63,15 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
     queryFn: () => ticketsApi.getRelatedKnowledge(ticketId),
   })
 
+  const {
+    data: replies = [],
+    isLoading: isRepliesLoading,
+    isError: isRepliesError,
+  } = useQuery({
+    queryKey: ["tickets", ticketId, "replies"],
+    queryFn: () => ticketsApi.getReplies(ticketId),
+  })
+
   const analyzeTicket = useMutation({
     mutationFn: () => ticketsApi.analyze(ticketId),
     onSuccess: (updatedTicket) => {
@@ -107,6 +116,22 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
     onError: (error) => {
       toast.error(
         error instanceof Error ? error.message : "Could not assign ticket",
+      )
+    },
+  })
+
+  const sendReply = useMutation({
+    mutationFn: (content: string) =>
+      ticketsApi.sendReply(ticketId, { content }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tickets", ticketId] })
+      queryClient.invalidateQueries({ queryKey: ["tickets", ticketId, "replies"] })
+      queryClient.invalidateQueries({ queryKey: ["tickets"] })
+      toast.success("Reply sent to customer")
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error ? error.message : "Could not send reply",
       )
     },
   })
@@ -340,9 +365,13 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                       <Copy className="size-4" />
                       Copy
                     </Button>
-                    <Button size="sm" disabled>
+                    <Button
+                      size="sm"
+                      disabled={!draftReply.trim() || sendReply.isPending}
+                      onClick={() => sendReply.mutate(draftReply)}
+                    >
                       <Send className="size-4" />
-                      Send later
+                      {sendReply.isPending ? "Sending..." : "Send reply"}
                     </Button>
                   </div>
                 </div>
@@ -356,6 +385,60 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                   }
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border border-slate-200 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="size-4 text-slate-500" />
+                Reply history
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isRepliesLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              ) : isRepliesError ? (
+                <p className="text-sm text-rose-600">
+                  Could not load reply history.
+                </p>
+              ) : replies.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  No customer replies have been sent yet.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {replies.map((reply) => (
+                    <div
+                      key={reply.id}
+                      className="border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+                    >
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-sm font-medium text-slate-800">
+                          {reply.subject}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {new Intl.DateTimeFormat("en", {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }).format(new Date(reply.sentAt))}
+                        </p>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Sent by {reply.sentByUserName} to {reply.recipientEmail}
+                      </p>
+                      <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                        {reply.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -372,7 +455,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
               />
               <Property
                 label="Assigned to"
-                value={ticket.assignedToUsername ?? "Unassigned"}
+                value={ticket.assignedToUserName ?? "Unassigned"}
               />
               <Button
                 variant={isAssignedToMe ? "outline" : "default"}

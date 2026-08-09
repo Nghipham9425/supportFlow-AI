@@ -1,7 +1,7 @@
 export type TicketChannel = 1 | 2 | 3 | 4 | 5
 export type TicketCategory = 1 | 2 | 3 | 4 | 5 | 6
 export type TicketPriority = 1 | 2 | 3 | 4
-export type TicketStatus = 1 | 2 | 3 | 4 | 5 | 6 | 7
+export type TicketStatus = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 export type TicketSentiment = 1 | 2 | 3 | 4 | 5
 
 export type Ticket = {
@@ -15,7 +15,7 @@ export type Ticket = {
   priority: TicketPriority
   status: TicketStatus
   assignedToUserId: string | null
-  assignedToUsername: string | null
+  assignedToUserName: string | null
   assignedAt: string | null
   aiSummary: string | null
   aiDraftReply: string | null
@@ -30,6 +30,20 @@ export type CreateTicketInput = {
   subject: string
   description: string
   channel: TicketChannel
+}
+
+export type SendTicketReplyInput = {
+  content: string
+}
+
+export type TicketReply = {
+  id: string
+  ticketId: string
+  sentByUserName: string
+  recipientEmail: string
+  subject: string
+  content: string
+  sentAt: string
 }
 
 export const ticketChannelLabels: Record<TicketChannel, string> = {
@@ -53,8 +67,9 @@ export const ticketStatusLabels: Record<TicketStatus, string> = {
   3: "Drafted",
   4: "Approved",
   5: "Rejected",
-  6: "Resolved",
-  7: "Closed",
+  6: "Pending customer",
+  7: "Resolved",
+  8: "Closed",
 }
 
 export const ticketCategoryLabels: Record<TicketCategory, string> = {

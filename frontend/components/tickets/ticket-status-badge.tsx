@@ -14,8 +14,9 @@ export function StatusBadge({ status }: { status: TicketStatus }) {
     3: "border-cyan-200 bg-cyan-50 text-cyan-700",
     4: "border-emerald-200 bg-emerald-50 text-emerald-700",
     5: "border-rose-200 bg-rose-50 text-rose-700",
-    6: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    7: "border-slate-200 bg-slate-100 text-slate-700",
+    6: "border-amber-200 bg-amber-50 text-amber-700",
+    7: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    8: "border-slate-200 bg-slate-100 text-slate-700",
   };
 
   return (

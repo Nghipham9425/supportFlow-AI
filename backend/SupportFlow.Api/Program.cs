@@ -2,7 +2,6 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Pgvector.EntityFrameworkCore;
 using SupportFlow.Application.Tickets.Interfaces;
 using SupportFlow.Infrastructure.Persistence;
 using SupportFlow.Infrastructure.Tickets;
@@ -17,6 +16,8 @@ using SupportFlow.Application.Auth.Interfaces;
 using SupportFlow.Infrastructure.Auth;
 using Microsoft.AspNetCore.Identity;
 using SupportFlow.Domain.Entities;
+using SupportFlow.Application.Email.Interfaces;
+using SupportFlow.Infrastructure.Email.Brevo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +61,9 @@ builder.Services
         };
     });
 
+    builder.Services.Configure<BrevoOptions>(
+    builder.Configuration.GetSection(BrevoOptions.SectionName));
+
 builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -80,7 +84,8 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
-
+builder.Services.AddHttpClient<IEmailSender, BrevoEmailSender>();
+builder.Services.AddScoped<ITicketReplyService, TicketReplyService>();
 var embeddingProvider = builder.Configuration["AI:EmbeddingProvider"] ?? "Fake";
 
 if (embeddingProvider.Equals("Fake", StringComparison.OrdinalIgnoreCase))
