@@ -14,6 +14,9 @@ export type Ticket = {
   category: TicketCategory
   priority: TicketPriority
   status: TicketStatus
+  assignedToUserId: string | null
+  assignedToUsername: string | null
+  assignedAt: string | null
   aiSummary: string | null
   aiDraftReply: string | null
   sentiment: TicketSentiment

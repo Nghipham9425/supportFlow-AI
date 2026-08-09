@@ -25,7 +25,9 @@ public class TicketDraftReplyService : ITicketDraftReplyService
     }
     public async Task<TicketDto?> GenerateDraftReplyAsync(Guid ticketId)
     {
-        var ticket = await _db.Tickets.FirstOrDefaultAsync(ticket => ticket.Id == ticketId);
+        var ticket = await _db.Tickets
+            .Include(ticket => ticket.AssignedToUser)
+        .FirstOrDefaultAsync(ticket => ticket.Id == ticketId);
         if (ticket is null) return null;
 
         var ticketDto = ToDto(ticket);
@@ -55,6 +57,9 @@ public class TicketDraftReplyService : ITicketDraftReplyService
             Category = ticket.Category,
             Priority = ticket.Priority,
             Status = ticket.Status,
+            AssignedToUserId = ticket.AssignedToUserId,
+            AssignedToUserName = ticket.AssignedToUser?.Name,
+            AssignedAt = ticket.AssignedAt,
             AiSummary = ticket.AiSummary,
             AiDraftReply = ticket.AiDraftReply,
             Sentiment = ticket.Sentiment,

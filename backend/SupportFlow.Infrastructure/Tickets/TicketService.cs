@@ -3,6 +3,7 @@ using SupportFlow.Application.Tickets.Interfaces;
 using SupportFlow.Infrastructure.Persistence;
 using SupportFlow.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using SupportFlow.Domain.Enums;
 
 namespace SupportFlow.Infrastructure.Tickets
 {
@@ -51,6 +52,7 @@ namespace SupportFlow.Infrastructure.Tickets
         public async Task<TicketDto?> GetTicketByIdAsync(Guid id)
         {
             var ticket = await _dbContext.Tickets
+            .Include(ticket => ticket.AssignedToUser)
             .FirstOrDefaultAsync(ticket => ticket.Id == id);
 
             if(ticket is null) return null;
@@ -60,15 +62,20 @@ namespace SupportFlow.Infrastructure.Tickets
 
         public async Task<List<TicketDto>> GetTicketsAsync()
         {
-            return await _dbContext.Tickets
-            .OrderByDescending(ticket => ticket.CreatedAt)
-            .Select(ticket => ToDto(ticket)).
-            ToListAsync();
+            var tickets = await _dbContext.Tickets
+                .Include(ticket => ticket.AssignedToUser)
+                .OrderByDescending(ticket => ticket.CreatedAt)
+                .ToListAsync();
+
+            return tickets
+                .Select(ToDto)
+                .ToList();
         }
 
         public async Task<TicketDto?> UpdateTicketAsync(Guid id, UpdateTicketDto request)
         {
             var ticket = await _dbContext.Tickets
+                        .Include(ticket => ticket.AssignedToUser)
                         .FirstOrDefaultAsync(ticket => ticket.Id == id);
 
             if (ticket is null) return null;
@@ -137,8 +144,35 @@ namespace SupportFlow.Infrastructure.Tickets
                 AiDraftReply = ticket.AiDraftReply,
                 Sentiment = ticket.Sentiment,
                 CreatedAt = ticket.CreatedAt,
-                UpdatedAt = ticket.UpdatedAt
+                UpdatedAt = ticket.UpdatedAt,
+                AssignedToUserId = ticket.AssignedToUserId,
+                AssignedToUserName = ticket.AssignedToUser?.Name,
+                AssignedAt = ticket.AssignedAt,
             };
+        }
+
+        public async Task<TicketDto?> AssignToUserAsync(Guid TicketId, Guid UserId)
+        {
+            var ticket = await _dbContext.Tickets
+            .Include(ticket => ticket.AssignedToUser)
+            .FirstOrDefaultAsync(ticket => ticket.Id == TicketId);
+
+            if (ticket is null) return null;
+
+            var user = await _dbContext.Users
+            .FirstOrDefaultAsync(user => user.Id == UserId &&
+            user.Role == UserRole.Admin);
+
+            if (user is null) return null;
+
+            ticket.AssignedToUserId = user.Id;
+            ticket.AssignedToUser = user;
+            ticket.AssignedAt = DateTime.UtcNow;
+            ticket.UpdatedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+
+            return ToDto(ticket);
         }
     }
 }

@@ -30,13 +30,16 @@ import {
   Send,
   Sparkles,
   User,
+  UserCheck,
 } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
+import { useAuth } from "@/components/auth/auth-provider"
 
 export function TicketDetail({ ticketId }: { ticketId: string }) {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const [draftEdit, setDraftEdit] = useState<{
     ticketId: string
     value: string
@@ -94,6 +97,20 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
     },
   })
 
+  const assignToMe = useMutation({
+    mutationFn: () => ticketsApi.assignToMe(ticketId),
+    onSuccess: (updatedTicket) => {
+      queryClient.setQueryData(["tickets", ticketId], updatedTicket)
+      queryClient.invalidateQueries({ queryKey: ["tickets"] })
+      toast.success("Ticket assigned to you")
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error ? error.message : "Could not assign ticket",
+      )
+    },
+  })
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -114,6 +131,8 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       </div>
     )
   }
+
+  const isAssignedToMe = ticket.assignedToUserId === user?.id
 
   const draftReply =
     draftEdit?.ticketId === ticketId
@@ -351,6 +370,25 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                 label="Status"
                 value={ticketStatusLabels[ticket.status]}
               />
+              <Property
+                label="Assigned to"
+                value={ticket.assignedToUsername ?? "Unassigned"}
+              />
+              <Button
+                variant={isAssignedToMe ? "outline" : "default"}
+                className="w-full"
+                disabled={assignToMe.isPending || isAssignedToMe}
+                onClick={() => assignToMe.mutate()}
+              >
+                <UserCheck className="size-4" />
+                {assignToMe.isPending
+                  ? "Assigning..."
+                  : isAssignedToMe
+                    ? "Assigned to you"
+                    : ticket.assignedToUserId
+                      ? "Reassign to me"
+                      : "Assign to me"}
+              </Button>
               <Property
                 label="Priority"
                 value={ticketPriorityLabels[ticket.priority]}

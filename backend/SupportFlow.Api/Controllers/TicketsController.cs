@@ -3,6 +3,8 @@ using SupportFlow.Application.Tickets;
 using SupportFlow.Application.Tickets.DTOs;
 using SupportFlow.Application.Tickets.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace SupportFlow.Api.Controllers;
 
@@ -40,6 +42,28 @@ public class TicketsController : ControllerBase
     {
         var ticket = await _ticketService.GetTicketByIdAsync(id);
         if (ticket == null) return NotFound();
+
+        return Ok(ticket);
+    }
+
+    [HttpPost("{id:guid}/assign-to-me")]
+    public async Task<ActionResult<TicketDto>> AssignToMe(Guid id)
+    {
+        var userIdValue =
+            User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var ticket = await _ticketService.AssignToUserAsync(id, userId);
+
+        if (ticket is null)
+        {
+            return NotFound();
+        }
 
         return Ok(ticket);
     }

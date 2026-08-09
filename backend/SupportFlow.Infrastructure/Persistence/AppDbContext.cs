@@ -44,7 +44,6 @@ public class AppDbContext : DbContext
             .HasConversion<string>()
             .HasMaxLength(50)
             .IsRequired();
-
         });
 
         modelBuilder.Entity<Ticket>(entity =>
@@ -93,6 +92,14 @@ public class AppDbContext : DbContext
                 .HasConversion<string>()
                 .HasMaxLength(50)
                 .IsRequired();
+
+            entity.HasOne(ticket => ticket.AssignedToUser)
+            .WithMany()
+            .HasForeignKey(ticket => ticket.AssignedToUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(ticket => ticket.AssignedToUserId);
+
         });
         modelBuilder.Entity<KnowledgeArticle>(entity =>
         {

@@ -1,4 +1,5 @@
 
+using SupportFlow.Domain.Entities;
 using SupportFlow.Domain.Enums;
 
 namespace SupportFlow.Application.Tickets.DTOs;
@@ -14,6 +15,9 @@ public class TicketDto
     public TicketCategory Category { get; set; }
     public TicketPriority Priority { get; set; }
     public TicketStatus Status { get; set; }
+    public Guid? AssignedToUserId { get; set; }
+    public string? AssignedToUserName { get; set; }
+    public DateTime? AssignedAt{ get; set; }
     public string? AiSummary { get; set; }
     public string? AiDraftReply { get; set; }
     public TicketSentiment Sentiment { get; set; }

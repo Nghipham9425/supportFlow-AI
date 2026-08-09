@@ -22,7 +22,8 @@ public class TicketAnalysisService : ITicketAnalysisService
     public async Task<TicketDto?> AnalyzeTicketAsync(Guid ticketId)
     {
         var ticket = await _dbContext.Tickets
-            .FirstOrDefaultAsync(ticket => ticket.Id == ticketId);
+        .Include(ticket => ticket.AssignedToUser)
+        .FirstOrDefaultAsync(ticket => ticket.Id == ticketId);
 
         if (ticket is null)
         {
@@ -56,6 +57,9 @@ public class TicketAnalysisService : ITicketAnalysisService
             Category = ticket.Category,
             Priority = ticket.Priority,
             Status = ticket.Status,
+            AssignedToUserId = ticket.AssignedToUserId,
+            AssignedToUserName = ticket.AssignedToUser?.Name,
+            AssignedAt = ticket.AssignedAt,
             AiSummary = ticket.AiSummary,
             AiDraftReply = ticket.AiDraftReply,
             Sentiment = ticket.Sentiment,

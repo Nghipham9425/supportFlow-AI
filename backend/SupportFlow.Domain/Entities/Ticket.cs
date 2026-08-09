@@ -21,7 +21,12 @@ public class Ticket
     public TicketPriority Priority { get; set; } = TicketPriority.Medium;
 
     public TicketStatus Status { get; set; } = TicketStatus.Open;
+    public Guid? AssignedToUserId { get; set; }
+    
+    public User? AssignedToUser { get; set; }
 
+    public DateTime? AssignedAt { get; set; }
+    
     public string? AiSummary { get; set; }
 
     public string? AiDraftReply { get; set; }
