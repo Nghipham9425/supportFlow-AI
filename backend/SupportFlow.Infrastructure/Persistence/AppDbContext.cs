@@ -18,6 +18,8 @@ public class AppDbContext : DbContext
     public DbSet<TicketReply> TicketReplies => Set<TicketReply>();
 
     public DbSet<User> Users => Set<User>();
+
+    public DbSet<TicketActivity> TicketActivities => Set<TicketActivity>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -133,6 +135,36 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(reply => reply.TicketId);
+        });
+
+        modelBuilder.Entity<TicketActivity>(entity =>
+        {
+            entity.HasKey(activity => activity.Id);
+
+            entity.Property(activity => activity.Type)
+                    .HasConversion<string>()
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+            entity.Property(activity => activity.Message)
+            .HasMaxLength(2000)
+            .IsRequired();
+
+            entity.HasOne(activity => activity.Ticket)
+            .WithMany()
+            .HasForeignKey(activity => activity.TicketId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(activity => activity.ActorUser)
+            .WithMany()
+            .HasForeignKey(activity => activity.ActorUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(activity => new
+            {
+                activity.TicketId,
+                activity.CreatedAt
+            });
         });
 
         modelBuilder.Entity<KnowledgeArticle>(entity =>

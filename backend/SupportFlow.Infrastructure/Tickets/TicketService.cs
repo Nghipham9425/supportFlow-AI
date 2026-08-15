@@ -11,10 +11,14 @@ namespace SupportFlow.Infrastructure.Tickets
     {
 
         private readonly AppDbContext _dbContext;
+        private readonly ITicketActivityService _ticketActivityService;
 
-        public TicketService(AppDbContext context)
+        public TicketService(
+            AppDbContext context,
+            ITicketActivityService ticketActivityService)
         {
             _dbContext = context;
+            _ticketActivityService = ticketActivityService;
         }
 
 
@@ -31,6 +35,11 @@ namespace SupportFlow.Infrastructure.Tickets
             };
 
             _dbContext.Tickets.Add(ticket);
+
+            _ticketActivityService.Record(
+                ticket.Id,
+                TicketActivityType.Created,
+                "Ticket created.");
 
             await _dbContext.SaveChangesAsync();
 
@@ -169,6 +178,12 @@ namespace SupportFlow.Infrastructure.Tickets
             ticket.AssignedToUser = user;
             ticket.AssignedAt = DateTime.UtcNow;
             ticket.UpdatedAt = DateTime.UtcNow;
+
+            _ticketActivityService.Record(
+                ticket.Id,
+                TicketActivityType.Assigned,
+                $"Ticket assigned to {user.Name}.",
+                user.Id);
 
             await _dbContext.SaveChangesAsync();
 

@@ -18,19 +18,23 @@ public class TicketsController : ControllerBase
     private readonly ITicketDraftReplyService _ticketDraftReplyService;
     private readonly IRelatedKnowledgeService _relatedKnowledgeService;
     private readonly ITicketReplyService _ticketReplyService;
+    private readonly ITicketActivityService _ticketActivityService;
 
     public TicketsController(
         ITicketService ticketService,
         ITicketAnalysisService ticketAnalysisService,
         ITicketDraftReplyService ticketDraftReplyService,
         IRelatedKnowledgeService relatedKnowledgeService,
-        ITicketReplyService ticketReplyService)
+        ITicketReplyService ticketReplyService,
+        ITicketActivityService ticketActivityService
+        )
     {
         _ticketService = ticketService;
         _ticketAnalysisService = ticketAnalysisService;
         _ticketDraftReplyService = ticketDraftReplyService;
         _relatedKnowledgeService = relatedKnowledgeService;
         _ticketReplyService = ticketReplyService;
+        _ticketActivityService = ticketActivityService;
     }
     [HttpGet]
     public async Task<ActionResult<List<TicketDto>>> GetTickets()
@@ -215,5 +219,64 @@ public class TicketsController : ControllerBase
             cancellationToken);
 
         return Ok(replies);
+    }
+
+    [HttpGet("{id:guid}/activities")]
+    public async Task<ActionResult<IReadOnlyList<TicketActivityDto>>> GetActivities(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var ticket = await _ticketService.GetTicketByIdAsync(id);
+
+        if (ticket is null)
+        {
+            return NotFound();
+        }
+
+        var activities = await _ticketActivityService.GetActivitiesAsync(
+            id,
+            cancellationToken);
+
+        return Ok(activities);
+    }
+
+    [HttpPost("{id:guid}/notes")]
+    public async Task<ActionResult<TicketActivityDto>> AddNote(
+        Guid id,
+        CreateTicketNoteDto request,
+        CancellationToken cancellationToken)
+    {
+        var userIdValue =
+            User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var activity = await _ticketActivityService.AddNoteAsync(
+                id,
+                userId,
+                request,
+                cancellationToken);
+
+            if (activity is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(activity);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
