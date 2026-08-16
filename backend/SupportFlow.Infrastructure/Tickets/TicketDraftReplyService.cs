@@ -14,24 +14,28 @@ public class TicketDraftReplyService : ITicketDraftReplyService
     private readonly ITicketDraftReplyGenerator _draftReplyGenerator;
     private readonly IRelatedKnowledgeService _relatedKnowledgeService;
 
+    private readonly ITicketActivityService _ticketActivityService;
+
     public TicketDraftReplyService(
         AppDbContext db,
         ITicketDraftReplyGenerator draftReplyGenerator,
-        IRelatedKnowledgeService relatedKnowledgeService)
+        IRelatedKnowledgeService relatedKnowledgeService,
+        ITicketActivityService ticketActivityService)
     {
         _db = db;
         _draftReplyGenerator = draftReplyGenerator;
         _relatedKnowledgeService = relatedKnowledgeService;
+        _ticketActivityService = ticketActivityService;
     }
-    public async Task<TicketDto?> GenerateDraftReplyAsync(Guid ticketId)
+    public async Task<TicketDto?> GenerateDraftReplyAsync(Guid ticketId, Guid actorUserId, CancellationToken cancellationToken = default)
     {
         var ticket = await _db.Tickets
             .Include(ticket => ticket.AssignedToUser)
-        .FirstOrDefaultAsync(ticket => ticket.Id == ticketId);
+        .FirstOrDefaultAsync(ticket => ticket.Id == ticketId, cancellationToken);
         if (ticket is null) return null;
 
         var ticketDto = ToDto(ticket);
-        var relatedKnowledge =await _relatedKnowledgeService.GetForTicketAsync(ticketId);
+        var relatedKnowledge =await _relatedKnowledgeService.GetForTicketAsync(ticketId, cancellationToken);
 
         var draftReply =await _draftReplyGenerator.GenerateDraftReplyAsync(ticketDto, relatedKnowledge);     
 
@@ -39,7 +43,9 @@ public class TicketDraftReplyService : ITicketDraftReplyService
         ticket.Status = TicketStatus.Drafted;
         ticket.UpdatedAt = DateTime.UtcNow;
 
-        await _db.SaveChangesAsync();
+        _ticketActivityService.Record(ticketId, TicketActivityType.DraftGenerated, "AI draft reply generated.", actorUserId);
+
+        await _db.SaveChangesAsync(cancellationToken);
 
         return ToDto(ticket);
     }

@@ -14,11 +14,13 @@ public class TicketReplyService : ITicketReplyService
 {
     private readonly AppDbContext _db;
     private readonly IEmailSender _emailSender;
+    private readonly ITicketActivityService _ticketActivityService;
 
-    public TicketReplyService(AppDbContext db,IEmailSender emailSender)
+    public TicketReplyService(AppDbContext db,IEmailSender emailSender,ITicketActivityService ticketActivityService)
     {
         _db = db;
         _emailSender = emailSender;
+        _ticketActivityService = ticketActivityService;
     }
 
    public async Task<TicketReplyDto?> SendReplyAsync(
@@ -79,6 +81,13 @@ public class TicketReplyService : ITicketReplyService
         ticket.UpdatedAt = DateTime.UtcNow;
 
         _db.TicketReplies.Add(reply);
+
+        _ticketActivityService.Record(
+            ticket.Id,
+            TicketActivityType.ReplySent,
+            $"Reply sent to {ticket.CustomerEmail}.",
+            sender.Id);
+            
         await _db.SaveChangesAsync(cancellationToken);
 
         return ToDto(reply, sender.Name);

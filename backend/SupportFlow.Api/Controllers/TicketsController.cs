@@ -117,11 +117,20 @@ public class TicketsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/analyze")]
-    public async Task<ActionResult<TicketDto>> AnalyzeTicket(Guid id)
+    public async Task<ActionResult<TicketDto>> AnalyzeTicket(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var ticket = await _ticketAnalysisService.AnalyzeTicketAsync(id);
+            var userIdValue =
+                    User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var ticket = await _ticketAnalysisService.AnalyzeTicketAsync(id, userId, cancellationToken);
 
             if (ticket is null)
             {
@@ -138,11 +147,18 @@ public class TicketsController : ControllerBase
 
     }
     [HttpPost("{id:guid}/draft-reply")]
-    public async Task<ActionResult<TicketDto>> GenerateDraftReply(Guid id)
+    public async Task<ActionResult<TicketDto>> GenerateDraftReply(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var ticket = await _ticketDraftReplyService.GenerateDraftReplyAsync(id);
+            var userIdValue =
+                User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!Guid.TryParse(userIdValue, out var userId))
+                return Unauthorized();
+
+            var ticket = await _ticketDraftReplyService.GenerateDraftReplyAsync(id, userId, cancellationToken);
             if (ticket is null) return NotFound();
             return Ok(ticket);
         }

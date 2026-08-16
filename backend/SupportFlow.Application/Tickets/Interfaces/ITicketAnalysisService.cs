@@ -4,5 +4,5 @@ namespace SupportFlow.Application.Tickets.Interfaces;
 
 public interface ITicketAnalysisService
 {
-    Task<TicketDto?> AnalyzeTicketAsync(Guid ticketId);
+    Task<TicketDto?> AnalyzeTicketAsync(Guid ticketId, Guid actorUserId, CancellationToken cancellationToken = default);
 }

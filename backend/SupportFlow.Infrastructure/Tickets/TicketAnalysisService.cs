@@ -12,18 +12,20 @@ public class TicketAnalysisService : ITicketAnalysisService
 {
     private readonly AppDbContext _dbContext;
     private readonly ITicketAnalyzer _ticketAnalyzer;
+    private readonly ITicketActivityService _ticketActivityService;
 
-    public TicketAnalysisService(AppDbContext dbContext, ITicketAnalyzer ticketAnalyzer)
+    public TicketAnalysisService(AppDbContext dbContext, ITicketAnalyzer ticketAnalyzer, ITicketActivityService ticketActivityService)
     {
         _dbContext = dbContext;
         _ticketAnalyzer = ticketAnalyzer;
+        _ticketActivityService = ticketActivityService;
     }
 
-    public async Task<TicketDto?> AnalyzeTicketAsync(Guid ticketId)
+    public async Task<TicketDto?> AnalyzeTicketAsync(Guid ticketId,Guid actorUserId, CancellationToken cancellationToken=default)
     {
         var ticket = await _dbContext.Tickets
         .Include(ticket => ticket.AssignedToUser)
-        .FirstOrDefaultAsync(ticket => ticket.Id == ticketId);
+        .FirstOrDefaultAsync(ticket => ticket.Id == ticketId, cancellationToken);
 
         if (ticket is null)
         {
@@ -39,7 +41,14 @@ public class TicketAnalysisService : ITicketAnalysisService
         ticket.Status = TicketStatus.Analyzed;
         ticket.UpdatedAt = DateTime.UtcNow;
 
-        await _dbContext.SaveChangesAsync();
+        _ticketActivityService.Record(
+            ticketId,
+            TicketActivityType.Analyzed,
+            "AI analysis completed.",
+            actorUserId
+        );
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return ToDto(ticket);
     }
