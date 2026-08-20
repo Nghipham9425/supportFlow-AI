@@ -4,6 +4,7 @@ import {
   SendTicketReplyInput,
   Ticket,
   TicketReply,
+  TicketStatus,
 } from "@/types/ticket"
 import {
   CreateKnowledgeArticleInput,
@@ -62,7 +63,6 @@ export const ticketsApi = {
     request<Ticket>(`/tickets/${id}/analyze`, {
       method: "POST",
     }),
-
   generateDraftReply: (id: string) =>
     request<Ticket>(`/tickets/${id}/draft-reply`, {
       method: "POST",
@@ -74,14 +74,18 @@ export const ticketsApi = {
       method: "POST",
       body: JSON.stringify(input),
     }),
-  getReplies: (id: string) =>
-    request<TicketReply[]>(`/tickets/${id}/replies`),
+  getReplies: (id: string) => request<TicketReply[]>(`/tickets/${id}/replies`),
   remove: (id: string) =>
     request<void>(`/tickets/${id}`, {
       method: "DELETE",
     }),
   getRelatedKnowledge: (id: string) =>
     request<RelatedKnowledge[]>(`/tickets/${id}/related-knowledge`),
+  updateStatus: (id: string, status: TicketStatus) =>
+    request<Ticket>(`/tickets/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
 }
 
 export const knowledgeApi = {

@@ -123,11 +123,6 @@ namespace SupportFlow.Infrastructure.Tickets
         {
             ticket.Priority = request.Priority.Value;
         }
-
-        if (request.Status is not null)
-        {
-            ticket.Status = request.Status.Value;
-        }
         ticket.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync();
@@ -187,6 +182,52 @@ namespace SupportFlow.Infrastructure.Tickets
 
             await _dbContext.SaveChangesAsync();
 
+            return ToDto(ticket);
+        }
+
+        public async Task<TicketDto?> UpdateStatusAsync(Guid ticketId, UpdateTicketStatusDto request, Guid actorUserId, CancellationToken cancellationToken = default)
+        {
+            var ticket = await _dbContext.Tickets
+                        .Include(ticket => ticket.AssignedToUser)
+                        .FirstOrDefaultAsync(ticket => ticket.Id == ticketId, cancellationToken);
+
+            if (ticket is null) return null;
+
+            var isValidTransition = ticket.Status switch
+            {
+                TicketStatus.Open
+                    or TicketStatus.Analyzed
+                    or TicketStatus.Drafted
+                    or TicketStatus.PendingCustomer
+                    when request.Status == TicketStatus.Resolved => true,
+
+                TicketStatus.Resolved
+                    when request.Status == TicketStatus.Closed
+                    || request.Status == TicketStatus.Open => true,
+
+                TicketStatus.Closed
+                    when request.Status == TicketStatus.Open => true,
+                _ => false
+            };
+
+            if (!isValidTransition)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot change ticket status from {ticket.Status} to {request.Status}.");
+            }
+
+            var previousStatus = ticket.Status;
+
+            ticket.Status = request.Status;
+            ticket.UpdatedAt = DateTime.UtcNow;
+
+            _ticketActivityService.Record(
+                ticketId,
+                TicketActivityType.StatusChanged,
+                $"Status changed from {previousStatus} to {ticket.Status}.",
+                actorUserId);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return ToDto(ticket);
         }
     }

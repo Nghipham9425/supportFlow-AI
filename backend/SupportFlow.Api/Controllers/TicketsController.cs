@@ -295,4 +295,31 @@ public class TicketsController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpPatch("{id:guid}/status")]
+    public async Task<ActionResult<TicketDto>> UpdateStatus(
+        Guid id,
+        UpdateTicketStatusDto request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var userIdValue =
+            User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+        try
+        {
+            var ticket = await _ticketService.UpdateStatusAsync(id, request, userId, cancellationToken);
+            if (ticket is null) return NotFound();
+            return Ok(ticket);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
 }

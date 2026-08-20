@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { ticketsApi } from "@/lib/api"
 import {
+  TicketStatus,
   ticketCategoryLabels,
   ticketChannelLabels,
   ticketPriorityLabels,
@@ -25,8 +26,10 @@ import {
   Clock,
   Copy,
   FileText,
+  LockKeyhole,
   Mail,
   MessageSquareText,
+  RotateCcw,
   Send,
   Sparkles,
   User,
@@ -125,13 +128,30 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       ticketsApi.sendReply(ticketId, { content }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tickets", ticketId] })
-      queryClient.invalidateQueries({ queryKey: ["tickets", ticketId, "replies"] })
+      queryClient.invalidateQueries({
+        queryKey: ["tickets", ticketId, "replies"],
+      })
       queryClient.invalidateQueries({ queryKey: ["tickets"] })
       toast.success("Reply sent to customer")
     },
     onError: (error) => {
       toast.error(
         error instanceof Error ? error.message : "Could not send reply",
+      )
+    },
+  })
+
+  const updateStatus = useMutation({
+    mutationFn: (status: TicketStatus) =>
+      ticketsApi.updateStatus(ticketId, status),
+    onSuccess: (updatedTicket) => {
+      queryClient.setQueryData(["tickets", ticketId], updatedTicket)
+      queryClient.invalidateQueries({ queryKey: ["tickets"] })
+      toast.success("Ticket status updated")
+    },
+    onError: (err) => {
+      toast.error(
+        err instanceof Error ? err.message : "Could not update status",
       )
     },
   })
@@ -453,6 +473,38 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
                 label="Status"
                 value={ticketStatusLabels[ticket.status]}
               />
+              {[1, 2, 3, 6].includes(ticket.status) && (
+                <Button
+                  className="w-full"
+                  disabled={updateStatus.isPending}
+                  onClick={() => updateStatus.mutate(7)}
+                >
+                  <BadgeCheck className="size-4" />
+                  Mark resolved
+                </Button>
+              )}
+              {ticket.status === 7 && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  disabled={updateStatus.isPending}
+                  onClick={() => updateStatus.mutate(8)}
+                >
+                  <LockKeyhole className="size-4" />
+                  Close ticket
+                </Button>
+              )}
+              {(ticket.status === 7 || ticket.status === 8) && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  disabled={updateStatus.isPending}
+                  onClick={() => updateStatus.mutate(1)}
+                >
+                  <RotateCcw className="size-4" />
+                  Reopen ticket
+                </Button>
+              )}
               <Property
                 label="Assigned to"
                 value={ticket.assignedToUserName ?? "Unassigned"}

@@ -10,5 +10,4 @@ public class UpdateTicketDto
     public TicketChannel? Channel { get; set; }
     public TicketCategory? Category { get; set; }
     public TicketPriority? Priority { get; set; }
-    public TicketStatus? Status { get; set; } 
 }

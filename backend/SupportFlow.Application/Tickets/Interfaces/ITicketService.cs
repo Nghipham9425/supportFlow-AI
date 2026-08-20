@@ -7,6 +7,11 @@ public interface ITicketService
     Task<TicketDto?> GetTicketByIdAsync(Guid id);
     Task<TicketDto> CreateTicketAsync(CreateTicketDto request);
     Task<TicketDto?> UpdateTicketAsync(Guid id, UpdateTicketDto request);
-    Task<TicketDto?> AssignToUserAsync(Guid TicketId, Guid UserId);
+    Task<TicketDto?> UpdateStatusAsync(
+        Guid ticketId,
+        UpdateTicketStatusDto request,
+        Guid actorUserId,
+        CancellationToken cancellationToken = default);
+    Task<TicketDto?> AssignToUserAsync(Guid ticketId, Guid userId);
     Task<bool> DeleteTicketAsync(Guid id);
 }

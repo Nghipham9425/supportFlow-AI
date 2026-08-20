@@ -1,50 +1,60 @@
-"use client";
+"use client"
 
-import { CreateTicketDialog } from "@/components/tickets/create-ticket-dialog";
-import { TicketsTable } from "@/components/tickets/tickets-table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ticketsApi } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, Clock, Search, Ticket } from "lucide-react";
-import { useMemo, useState } from "react";
+import { CreateTicketDialog } from "@/components/tickets/create-ticket-dialog"
+import { TicketsTable } from "@/components/tickets/tickets-table"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ticketsApi } from "@/lib/api"
+import { useQuery } from "@tanstack/react-query"
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Search,
+  Ticket,
+} from "lucide-react"
+import { useMemo, useState } from "react"
 
-type TicketFilter = "all" | "open" | "high" | "resolved";
+type TicketFilter = "all" | "open" | "high" | "resolved"
 
 export default function TicketsPage() {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<TicketFilter>("all");
+  const [search, setSearch] = useState("")
+  const [filter, setFilter] = useState<TicketFilter>("all")
 
-  const { data: tickets = [], isLoading, isError } = useQuery({
+  const {
+    data: tickets = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["tickets"],
     queryFn: ticketsApi.list,
-  });
+  })
 
-  const openTickets = tickets.filter((ticket) => ticket.status === 1).length;
-  const highPriority = tickets.filter((ticket) => ticket.priority >= 3).length;
-  const resolvedTickets = tickets.filter((ticket) => ticket.status === 6).length;
+  const openTickets = tickets.filter((ticket) => ticket.status === 1).length
+  const highPriority = tickets.filter((ticket) => ticket.priority >= 3).length
+  const resolvedTickets = tickets.filter((ticket) => ticket.status === 7).length
   const filteredTickets = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+    const normalizedSearch = search.trim().toLowerCase()
 
     return tickets.filter((ticket) => {
       const matchesFilter =
         filter === "all" ||
         (filter === "open" && ticket.status === 1) ||
         (filter === "high" && ticket.priority >= 3) ||
-        (filter === "resolved" && ticket.status === 6);
+        (filter === "resolved" && ticket.status === 7)
 
       const matchesSearch =
         normalizedSearch.length === 0 ||
         ticket.customerName.toLowerCase().includes(normalizedSearch) ||
         ticket.customerEmail.toLowerCase().includes(normalizedSearch) ||
         ticket.subject.toLowerCase().includes(normalizedSearch) ||
-        ticket.description.toLowerCase().includes(normalizedSearch);
+        ticket.description.toLowerCase().includes(normalizedSearch)
 
-      return matchesFilter && matchesSearch;
-    });
-  }, [filter, search, tickets]);
+      return matchesFilter && matchesSearch
+    })
+  }, [filter, search, tickets])
 
   return (
     <div className="space-y-7">
@@ -87,7 +97,11 @@ export default function TicketsPage() {
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <Tabs value={filter} onValueChange={(value) => setFilter(value as TicketFilter)} className="w-full lg:w-auto">
+          <Tabs
+            value={filter}
+            onValueChange={(value) => setFilter(value as TicketFilter)}
+            className="w-full lg:w-auto"
+          >
             <TabsList className="w-full justify-start overflow-x-auto lg:w-fit">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="open">Open</TabsTrigger>
@@ -114,13 +128,14 @@ export default function TicketsPage() {
         </div>
       ) : isError ? (
         <div className="rounded-md border bg-background p-8 text-sm text-destructive">
-          Could not load tickets. Check that the ASP.NET API is running on port 5059.
+          Could not load tickets. Check that the ASP.NET API is running on port
+          5059.
         </div>
       ) : (
         <TicketsTable tickets={filteredTickets} />
       )}
     </div>
-  );
+  )
 }
 
 function MetricCard({
@@ -129,10 +144,10 @@ function MetricCard({
   value,
   accent,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number;
-  accent: string;
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  value: number
+  accent: string
 }) {
   return (
     <Card className="border border-slate-200 bg-white shadow-sm">
@@ -140,7 +155,9 @@ function MetricCard({
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {label}
         </CardTitle>
-        <span className={`flex size-8 items-center justify-center rounded-md ${accent}`}>
+        <span
+          className={`flex size-8 items-center justify-center rounded-md ${accent}`}
+        >
           <Icon className="size-4" />
         </span>
       </CardHeader>
@@ -148,5 +165,5 @@ function MetricCard({
         <p className="text-2xl font-semibold">{value}</p>
       </CardContent>
     </Card>
-  );
+  )
 }
