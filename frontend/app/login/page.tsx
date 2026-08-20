@@ -6,10 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { authApi } from "@/lib/api"
 import { useMutation } from "@tanstack/react-query"
-import { LockKeyhole, ShieldCheck } from "lucide-react"
+import { LockKeyhole, ShieldCheck, UserRoundCheck } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { toast } from "sonner"
+
+const DEMO_EMAIL = "supportflow.demo@example.com"
+const DEMO_PASSWORD = "SupportFlowDemo123!"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -38,6 +41,11 @@ export default function LoginPage() {
     })
   }
 
+  function fillDemoAccount() {
+    setEmail(DEMO_EMAIL)
+    setPassword(DEMO_PASSWORD)
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
       <Card className="w-full max-w-md border border-slate-200 bg-white shadow-sm">
@@ -54,6 +62,38 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent>
+          <div className="mb-5 border-y border-slate-200 bg-slate-50 px-3 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-slate-900">Demo account</p>
+                <p className="mt-0.5 text-xs text-slate-500">Admin workspace access</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={fillDemoAccount}
+              >
+                <UserRoundCheck className="size-4" />
+                Use demo
+              </Button>
+            </div>
+            <dl className="mt-3 grid gap-1 text-xs">
+              <div className="flex min-w-0 gap-2">
+                <dt className="w-16 shrink-0 text-slate-500">Email</dt>
+                <dd className="min-w-0 break-all font-mono text-slate-700">
+                  {DEMO_EMAIL}
+                </dd>
+              </div>
+              <div className="flex min-w-0 gap-2">
+                <dt className="w-16 shrink-0 text-slate-500">Password</dt>
+                <dd className="min-w-0 break-all font-mono text-slate-700">
+                  {DEMO_PASSWORD}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="email">

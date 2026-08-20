@@ -181,6 +181,24 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    if (app.Environment.IsDevelopment())
+    {
+        await DevelopmentDataSeeder.SeedKnowledgeArticlesAsync(db);
+    }
+
+    if (builder.Configuration.GetValue<bool>("DemoAdmin:Enabled"))
+    {
+        var passwordHasher = scope.ServiceProvider
+            .GetRequiredService<IPasswordHasher<User>>();
+
+        await DemoAdminSeeder.SeedAsync(
+            db,
+            passwordHasher,
+            builder.Configuration["DemoAdmin:Name"] ?? string.Empty,
+            builder.Configuration["DemoAdmin:Email"] ?? string.Empty,
+            builder.Configuration["DemoAdmin:Password"] ?? string.Empty);
+    }
 }
 
     if (app.Environment.IsDevelopment())
