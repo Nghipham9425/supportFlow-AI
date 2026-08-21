@@ -4,6 +4,7 @@ import {
   PriorityBadge,
   StatusBadge,
 } from "@/components/tickets/ticket-status-badge"
+import { TicketActivityPanel } from "@/components/tickets/ticket-activity-panel"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -564,35 +565,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
             </CardContent>
           </Card>
 
-          <Card className="border border-slate-200 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle>Activity</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
-              <TimelineItem
-                title="Ticket created"
-                description="Initial customer issue was captured."
-              />
-              <TimelineItem
-                title={
-                  ticket.aiSummary
-                    ? "AI analysis completed"
-                    : "Waiting for AI analysis"
-                }
-                description={
-                  ticket.aiSummary
-                    ? "AI triage updated summary, sentiment, priority, and category."
-                    : "Run AI analysis to triage this ticket."
-                }
-              />
-              {ticket.aiDraftReply && (
-                <TimelineItem
-                  title="Draft reply generated"
-                  description="A suggested customer response is ready for review."
-                />
-              )}
-            </CardContent>
-          </Card>
+          <TicketActivityPanel ticketId={ticketId} />
         </aside>
       </div>
     </div>
@@ -633,26 +606,6 @@ function Property({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
       <span className="text-slate-500">{label}</span>
       <span className="text-right font-medium break-words">{value}</span>
-    </div>
-  )
-}
-
-function TimelineItem({
-  title,
-  description,
-}: {
-  title: string
-  description: string
-}) {
-  return (
-    <div className="flex gap-3">
-      <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-        <Clock className="size-3.5" />
-      </div>
-      <div>
-        <p className="font-medium">{title}</p>
-        <p className="mt-1 text-slate-500">{description}</p>
-      </div>
     </div>
   )
 }

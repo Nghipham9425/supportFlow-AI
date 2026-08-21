@@ -36,6 +36,32 @@ export type SendTicketReplyInput = {
   content: string
 }
 
+export const TicketActivityType = {
+  Created: 1,
+  Assigned: 2,
+  Analyzed: 3,
+  DraftGenerated: 4,
+  ReplySent: 5,
+  StatusChanged: 6,
+  InternalNote: 7,
+} as const
+
+export type TicketActivityType =
+  (typeof TicketActivityType)[keyof typeof TicketActivityType]
+
+export type TicketActivity = {
+  id: string
+  ticketId: string
+  type: TicketActivityType
+  message: string
+  actorUserName: string | null
+  createdAt: string
+}
+
+export type CreateTicketNoteInput = {
+  content: string
+}
+
 export type TicketReply = {
   id: string
   ticketId: string

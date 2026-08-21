@@ -5,6 +5,8 @@ import {
   Ticket,
   TicketReply,
   TicketStatus,
+  CreateTicketNoteInput,
+  TicketActivity,
 } from "@/types/ticket"
 import {
   CreateKnowledgeArticleInput,
@@ -85,6 +87,13 @@ export const ticketsApi = {
     request<Ticket>(`/tickets/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
+    }),
+  getActivities: (id: string) =>
+    request<TicketActivity[]>(`/tickets/${id}/activities`),
+  addNote: (id: string, input: CreateTicketNoteInput) =>
+    request<TicketActivity>(`/tickets/${id}/notes`, {
+      method: "POST",
+      body: JSON.stringify(input),
     }),
 }
 
